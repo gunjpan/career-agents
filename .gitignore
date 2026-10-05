@@ -1,0 +1,19 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+secrets/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+data/
+*.pdf
+*.docx
+*.egg-info/
+
+# personal data: must never be committed (project must be open-sourceable)
+config/master_resume.yaml
+config/answers.yaml
