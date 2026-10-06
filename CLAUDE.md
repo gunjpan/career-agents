@@ -59,6 +59,17 @@ settings.
 Repo layout: `agents/`, `adapters/ats/`, `storage/`, `orchestrator/`, `prompts/`, `config/`,
 `evals/`, `tests/`.
 
+## Constraints discovered (Block 1)
+- **Google auth is split.** Sheets uses the service account. Drive uses OAuth as me, because
+  service accounts have no Drive storage quota (uploads to a personal folder fail with 403
+  `storageQuotaExceeded`; Shared Drives need Workspace).
+- **Drive scope is `drive.file`**, so the app only sees files it created. It creates its own root
+  folder via `jobagent auth-drive`; `DRIVE_FOLDER_ID` must be that folder, not one made by hand.
+- **OAuth app is published ("In production") on the Google Cloud project**, so the refresh token
+  does not expire after 7 days (Testing status would). It can still die if I revoke access,
+  change my password or leave it unused ~6 months; fix by re-running `jobagent auth-drive`.
+  CI gets the token from the `GOOGLE_OAUTH_TOKEN_JSON` secret.
+
 ## Day-1 build order (each block has a "done when")
 1. Setup — repo, keys, Sheet + Drive shared with service account → test writes one row
 2. Core pipeline — Companies tab, Greenhouse + Lever adapters, dedupe, hard filters, states → Jobs tab fills
