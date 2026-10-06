@@ -12,6 +12,10 @@ class Settings(BaseSettings):
 
     google_service_account_file: str = "secrets/service-account.json"
     google_service_account_json: SecretStr | None = None
+    # Drive uses OAuth as the user: service accounts have no Drive storage quota.
+    google_oauth_client_file: str = "secrets/oauth-client.json"
+    google_oauth_token_file: str = "secrets/drive-token.json"
+    google_oauth_token_json: SecretStr | None = None
     sheet_id: str = ""
     drive_folder_id: str = ""
     storage_backend: Literal["sheets", "csv"] = "sheets"
@@ -21,6 +25,14 @@ class Settings(BaseSettings):
         if self.google_service_account_json:
             return json.loads(self.google_service_account_json.get_secret_value())
         with open(self.google_service_account_file) as f:
+            return json.load(f)
+
+
+    def oauth_token_info(self) -> dict:
+        """Authorized-user JSON (refresh token + client id/secret). Env var wins, as above."""
+        if self.google_oauth_token_json:
+            return json.loads(self.google_oauth_token_json.get_secret_value())
+        with open(self.google_oauth_token_file) as f:
             return json.load(f)
 
 
