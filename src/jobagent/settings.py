@@ -27,7 +27,6 @@ class Settings(BaseSettings):
         with open(self.google_service_account_file) as f:
             return json.load(f)
 
-
     def oauth_token_info(self) -> dict:
         """Authorized-user JSON (refresh token + client id/secret). Env var wins, as above."""
         if self.google_oauth_token_json:
