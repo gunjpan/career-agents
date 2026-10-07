@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 import typer
 from rich.console import Console
+from rich.table import Table
 
 from jobagent.settings import get_settings
 from jobagent.storage import get_storage
@@ -17,12 +18,40 @@ def main() -> None:
 
 @app.command("check-setup")
 def check_setup() -> None:
-    """Block 1 smoke test: write one row to the Jobs tab."""
+    """Read-only smoke test: can we reach every tab? (Block 1's write test is retired: Jobs has headers now.)"""
     settings = get_settings()
     storage = get_storage(settings)
-    stamp = datetime.now(UTC).isoformat(timespec="seconds")
-    storage.append_row("Jobs", ["setup-test", stamp])
-    console.print(f"[green]OK[/green] wrote a row to Jobs via {settings.storage_backend}")
+    for tab in ("Jobs", "Companies", "Runs", "Evals"):
+        rows = [r for r in storage.read_rows(tab) if any(r)]
+        console.print(f"[green]OK[/green] {tab}: {len(rows)} non-empty rows via {settings.storage_backend}")
+
+
+@app.command("run")
+def run(
+    criteria_file: str = typer.Option("config/criteria.yaml", "--criteria"),
+) -> None:
+    """Fetch every active company, apply hard filters, dedupe, write new jobs (state: filtered)."""
+    from jobagent.adapters.ats import build_adapters
+    from jobagent.adapters.ats.base import make_client
+    from jobagent.models.criteria import load_criteria
+    from jobagent.orchestrator.pipeline import run_pipeline
+
+    storage = get_storage(get_settings())
+    with make_client() as client:
+        summary = run_pipeline(
+            storage, build_adapters(client), load_criteria(criteria_file), datetime.now(UTC)
+        )
+
+    table = Table(title="Run summary")
+    for col in ("Company", "Fetched", "Rejected", "Duplicates", "Added", "Flags / error"):
+        table.add_column(col)
+    for r in summary.results:
+        rejected = ", ".join(f"{k} {v}" for k, v in r.rejected.items()) or "-"
+        note = r.error or ", ".join(f"{k} {v}" for k, v in r.flagged.items()) or "-"
+        table.add_row(r.company, str(r.fetched), rejected, str(r.duplicates), str(r.added), note)
+    console.print(table)
+    if summary.skipped:
+        console.print(f"Skipped (not active): {', '.join(summary.skipped)}")
 
 
 @app.command("auth-drive")
@@ -39,7 +68,7 @@ def auth_drive() -> None:
 
 @app.command("check-drive")
 def check_drive() -> None:
-    """Probe: can the service account upload a file into the Drive folder?"""
+    """Probe: can we upload a file into the Drive folder (OAuth as the user)?"""
     from googleapiclient.errors import HttpError
 
     from jobagent.storage.drive import DriveStorage
