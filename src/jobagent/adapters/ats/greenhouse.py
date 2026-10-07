@@ -32,5 +32,6 @@ class GreenhouseAdapter:
             locations=[loc] if loc else [],
             url=j["absolute_url"],
             posted_at=datetime.fromisoformat(published) if published else None,
+            department=((j.get("departments") or [{}])[0].get("name") or ""),
             description=html_to_text(j.get("content") or ""),
         )

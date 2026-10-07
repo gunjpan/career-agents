@@ -2,7 +2,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 from jobagent.settings import Settings
-from jobagent.storage.base import check_headers, rows_to_records
+from jobagent.storage.base import reconcile_headers, rows_to_records
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -27,10 +27,8 @@ class SheetsStorage:
 
     def ensure_headers(self, tab: str, headers: list[str]) -> None:
         rows = [r for r in self.read_rows(tab) if any(r)]
-        if not rows:
+        if not rows or reconcile_headers(tab, rows[0], headers):
             self.book.worksheet(tab).update([headers], "A1", raw=True)
-        else:
-            check_headers(tab, rows[0][: len(headers)], headers)
 
     def read_records(self, tab: str) -> list[dict[str, str]]:
         return rows_to_records(self.read_rows(tab))

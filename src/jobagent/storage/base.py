@@ -20,12 +20,25 @@ class Storage(Protocol):
         """Rows as dicts keyed by the header row. Blank rows are skipped."""
         ...
 
-    def append_records(self, tab: str, headers: list[str], records: list[dict[str, str]]) -> None: ...
+    def append_records(
+        self, tab: str, headers: list[str], records: list[dict[str, str]]
+    ) -> None: ...
 
 
-def check_headers(tab: str, existing: list[str], expected: list[str]) -> None:
-    if existing != expected:
-        raise StorageError(f"tab {tab!r} has headers {existing}, expected {expected}")
+def reconcile_headers(tab: str, existing: list[str], expected: list[str]) -> bool:
+    """True if columns were added at the end and the header row needs extending.
+
+    Additive changes (new columns on the right) migrate automatically; anything else,
+    such as renamed, reordered or removed columns, raises instead of corrupting the tab.
+    """
+    existing = list(existing)
+    while existing and not existing[-1]:
+        existing.pop()  # Sheets pads rows with empty cells
+    if existing == expected:
+        return False
+    if len(existing) < len(expected) and existing == expected[: len(existing)]:
+        return True
+    raise StorageError(f"tab {tab!r} has headers {existing}, expected {expected}")
 
 
 def rows_to_records(rows: list[list[str]]) -> list[dict[str, str]]:

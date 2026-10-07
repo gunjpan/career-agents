@@ -36,5 +36,6 @@ class AshbyAdapter:
             posted_at=datetime.fromisoformat(published) if published else None,
             remote=j.get("isRemote"),
             workplace_type=(j.get("workplaceType") or "").lower() or None,
+            department=j.get("department") or "",
             description=j.get("descriptionPlain") or "",
         )

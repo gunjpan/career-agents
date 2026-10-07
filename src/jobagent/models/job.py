@@ -31,6 +31,7 @@ class RawPosting(BaseModel):
     posted_at: datetime | None = None  # None when the ATS gives no reliable posted date
     remote: bool | None = None  # None = ATS doesn't say
     workplace_type: str | None = None  # remote / hybrid / onsite, lowercased, if known
+    department: str = ""  # department / job family as the ATS names it; a Scorer feature later
     description: str = ""  # plain text
 
 
@@ -52,6 +53,7 @@ class Job(BaseModel):
             "company": p.company,
             "title": p.title,
             "location": " | ".join(p.locations),
+            "department": p.department,
             "workplace_type": p.workplace_type or "",
             "posted_at": p.posted_at.isoformat() if p.posted_at else "",
             "flags": ",".join(self.flags),
@@ -82,4 +84,5 @@ JOBS_HEADERS = [
     "dedupe_key",
     "first_seen",
     "description",
+    "department",  # added after the first release; new columns go at the end (additive migration)
 ]

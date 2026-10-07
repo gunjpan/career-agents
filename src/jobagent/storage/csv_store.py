@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from jobagent.storage.base import check_headers, rows_to_records
+from jobagent.storage.base import reconcile_headers, rows_to_records
 
 
 class CsvStorage:
@@ -28,8 +28,9 @@ class CsvStorage:
         rows = [r for r in self.read_rows(tab) if any(r)]
         if not rows:
             self.append_row(tab, headers)
-        else:
-            check_headers(tab, rows[0], headers)
+        elif reconcile_headers(tab, rows[0], headers):
+            with self._path(tab).open("w", newline="") as f:
+                csv.writer(f).writerows([headers, *rows[1:]])
 
     def read_records(self, tab: str) -> list[dict[str, str]]:
         return rows_to_records(self.read_rows(tab))

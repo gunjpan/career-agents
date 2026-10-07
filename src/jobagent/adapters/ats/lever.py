@@ -34,5 +34,6 @@ class LeverAdapter:
             posted_at=datetime.fromtimestamp(created / 1000, tz=UTC) if created else None,
             remote=True if workplace == "remote" else None,
             workplace_type=workplace,
+            department=cats.get("department") or cats.get("team") or "",
             description=j.get("descriptionPlain") or "",
         )

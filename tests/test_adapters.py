@@ -44,3 +44,12 @@ def test_html_to_text_handles_escaped_html():
     assert html_to_text("&lt;p&gt;Hello &amp;amp; welcome&lt;/p&gt;&lt;li&gt;One&lt;/li&gt;") == (
         "Hello & welcome\nOne"
     )
+
+
+def test_department_captured_where_the_ats_provides_it():
+    ashby = AshbyAdapter(fixture_client("ashby_wealthsimple")).fetch(company("Wealthsimple"))
+    assert any(j.department for j in ashby)
+    gh = GreenhouseAdapter(fixture_client("greenhouse_stripe")).fetch(
+        company("Stripe", "greenhouse", "stripe")
+    )
+    assert any(j.department for j in gh)
