@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -87,6 +88,87 @@ def run(
     console.print(table)
     if summary.skipped:
         console.print(f"Skipped (not active): {', '.join(summary.skipped)}")
+
+
+@app.command("score")
+def score(
+    limit: int = typer.Option(None, "--limit", "-n", help="Score at most this many jobs"),
+    job_id: Annotated[
+        list[str] | None, typer.Option("--job-id", help="Score only this job (repeatable)")
+    ] = None,
+    config_file: str = typer.Option("config/scoring.yaml", "--config"),
+) -> None:
+    """Score `filtered` jobs with the Level + Fit Scorer (uses the Anthropic API, costs money)."""
+    from jobagent.agents.context import load_yaml, render_profiles, render_resume
+    from jobagent.agents.prompts import load_prompt
+    from jobagent.agents.scorer import Scorer
+    from jobagent.llm.claude import ClaudeProvider
+    from jobagent.models.scoring import load_scoring_config
+    from jobagent.orchestrator.scoring import log_run, run_scoring
+
+    settings = get_settings()
+    if settings.anthropic_api_key is None:
+        console.print("[red]ANTHROPIC_API_KEY is not set (put it in .env).[/red]")
+        raise typer.Exit(1)
+    config = load_scoring_config(config_file)
+    prompt = load_prompt(config.prompt)
+    scorer = Scorer(
+        ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value()),
+        config,
+        prompt,
+        render_resume(load_yaml("config/master_resume.yaml")),
+        render_profiles(load_yaml("config/role_profiles.yaml")),
+    )
+    storage = get_storage(settings)
+
+    progress = Progress(
+        SpinnerColumn(),
+        TextColumn("{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    )
+    started = datetime.now(UTC)
+    with progress:
+        task = progress.add_task("Starting", total=None)
+
+        def show(done: int, total: int, title: str) -> None:
+            progress.update(task, description=f"Scoring: {title[:60]}", completed=done, total=total)
+
+        summary = run_scoring(
+            storage, scorer, config, limit=limit, only=set(job_id or []) or None, on_progress=show
+        )
+        progress.update(task, description="Done", completed=1, total=1)
+    log_run(
+        storage,
+        command="score",
+        started_at=started,
+        finished_at=datetime.now(UTC),
+        summary=summary,
+        config=config,
+        prompt_version=prompt.version,
+    )
+
+    table = Table(title=f"Scoring summary ({config.model}, prompt v{prompt.version})")
+    for col in ("Scored", "Shortlisted", "Failed", "Not attempted", "Cost (USD)"):
+        table.add_column(col)
+    table.add_row(
+        str(summary.scored),
+        str(summary.shortlisted),
+        str(summary.failed),
+        str(summary.remaining),
+        f"${summary.cost_usd:.4f}",
+    )
+    console.print(table)
+    console.print(
+        f"Tokens: {summary.input_tokens} in, {summary.output_tokens} out, "
+        f"{summary.cache_read_tokens} from cache. Levels: {dict(summary.by_level)}"
+    )
+    if summary.stopped:
+        console.print(f"[yellow]Stopped early:[/yellow] {summary.stopped}")
+    for err in summary.errors[:5]:
+        console.print(f"[red]Failed:[/red] {err}")
 
 
 @app.command("auth-drive")
