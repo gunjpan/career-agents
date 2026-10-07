@@ -1,0 +1,49 @@
+# What each target level really looks like. The Scorer classifies a posting's REAL level from
+# these scope signals, not from its title. Adding a level = a config edit here (plus adding it
+# to `shortlist.levels` in scoring.yaml). Draft: edit freely, level accuracy depends on this file.
+#
+# resume_emphasis, cover_letter_tone and salary_floor are used by the Tailor in a later block.
+
+levels:
+  senior_manager:
+    title_variants: ["Senior Manager", "Sr. Manager", "Associate Director", "Head of <small area>"]
+    scope_signals:
+      team: "One team or a few related teams, roughly 8-30 people, mostly engineers and tech leads"
+      management: "Manages engineers and tech leads; may manage a few first-line managers"
+      budget: "Owns delivery and team cost; rarely a formal multi-million budget"
+      reports_to: "Director or senior director"
+      work: "Delivers a product area or platform; stays close to technical decisions and reviews"
+    resume_emphasis: "Hands-on technical depth with proven delivery and people growth"
+    cover_letter_tone: "Practical and specific; delivery outcomes first"
+    salary_floor: null
+
+  director:
+    title_variants: ["Director", "Senior Director", "Director of Engineering", "Head of Engineering"]
+    scope_signals:
+      team: "An organization of roughly 30-100+ people across multiple teams"
+      management: "Manages managers (and senior leads); accountable for hiring, performance and org design"
+      budget: "Owns a portfolio and budget, typically several million dollars; vendor and cost accountability"
+      reports_to: "VP, SVP or a C-level technology executive"
+      work: "Sets roadmap and architecture direction; partners with business, risk and executive stakeholders"
+    resume_emphasis: "Portfolio scale, budget, multi-team delivery, risk and audit outcomes, vendor management"
+    cover_letter_tone: "Executive and outcome-led; scale, accountability and partnership"
+    salary_floor: null
+
+  vp:
+    title_variants: ["Vice President", "VP", "Senior Vice President", "SVP", "Head of Technology"]
+    scope_signals:
+      team: "A large organization, typically 100+ people, led through directors"
+      management: "Manages directors; owns org strategy, succession and talent at scale"
+      budget: "Owns a large budget or P&L, typically tens of millions; board or executive committee exposure"
+      reports_to: "SVP, CTO, CIO or another C-level executive"
+      work: "Owns technology strategy and transformation across several domains; represents the function to the executive team"
+    resume_emphasis: "Enterprise strategy, transformation, executive influence, financial ownership"
+    cover_letter_tone: "Strategic and executive; enterprise outcomes and leadership of leaders"
+    salary_floor: null
+
+# Titles mislead. Rules of thumb the Scorer applies when a title and the scope disagree.
+title_inflation_notes:
+  - "At many banks 'Vice President' is a mid-level title and 'Director' can mean a senior manager or even a senior individual contributor. Judge by team size, reporting line and budget."
+  - "'Assistant/Associate Vice President' and 'AVP' roles are usually below Senior Manager: a senior individual contributor or team lead."
+  - "Principal, Staff, Lead and Architect titles are individual contributor roles however senior they sound, unless the posting says the role manages people."
+  - "If the posting gives no team size, reporting line or budget, say so and lower level confidence instead of guessing from the title."
