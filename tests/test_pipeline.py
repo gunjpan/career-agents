@@ -96,13 +96,17 @@ def test_progress_events_report_each_company_and_stage(tmp_path, criteria):
     )  # 6 postings, 0-based
 
 
-def test_real_config_keeps_only_wealthsimple_data_and_engineering(tmp_path, real_criteria):
+def test_real_config_keeps_only_wealthsimple_data_and_engineering_leaders(tmp_path, real_criteria):
     """End to end with the real criteria.yaml: Ashby fetch -> rules -> Jobs tab.
 
-    The fixture has 2 Data & Engineering postings plus Product, Finance and Commercial &
-    Marketing ones (all real, Remote (Canada), posted in Sept 2026).
+    Five real Wealthsimple postings (Remote (Canada), Jul-Aug 2026), one per outcome:
+      Manager, Software Development - Financial Risk   Data & Engineering  -> kept
+      Senior Manager, Corporate Development            Finance             -> department rule
+      Staff Software Developer, Production Engineering Data & Engineering  -> title rule (IC)
+      Senior Software Developer, LLM Infrastructure    Data & Engineering  -> title rule (IC)
+      Manager, Tax                                     Finance             -> title rule
     """
-    now = datetime(2026, 9, 30, tzinfo=UTC)
+    now = datetime(2026, 8, 25, tzinfo=UTC)
     ws = Company(name="Wealthsimple", ats="ashby", board_id="wealthsimple", status="active")
     storage = seeded_storage(tmp_path, ws)
     adapters = {"ashby": AshbyAdapter(fixture_client("ashby_wealthsimple_departments"))}
@@ -110,12 +114,9 @@ def test_real_config_keeps_only_wealthsimple_data_and_engineering(tmp_path, real
     result = run_pipeline(storage, adapters, real_criteria, now).results[0]
 
     assert result.fetched == 5
-    assert result.added == 2
-    assert result.rejected == {"include:department": 3}
-    jobs = storage.read_records("Jobs")
-    assert {j["department"] for j in jobs} == {"Data & Engineering"}
-    assert {j["title"] for j in jobs} == {
-        "Senior Software Developer, Post-Trade Management",
-        "Senior Software Developer, AI Platform",
-    }
-    assert {j["state"] for j in jobs} == {"filtered"}
+    assert result.added == 1
+    assert result.rejected == {"include:title": 3, "include:department": 1}
+    [job] = storage.read_records("Jobs")
+    assert job["title"] == "Manager, Software Development - Financial Risk"
+    assert job["department"] == "Data & Engineering"
+    assert job["state"] == "filtered"

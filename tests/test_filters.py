@@ -155,3 +155,67 @@ def test_real_config_wealthsimple_include_does_not_touch_other_companies(criteri
 def test_real_config_flags_fixed_term_roles(criteria, now):
     out = check(posting(title="Associate Director (Fixed-Term Contract)"), criteria, now)
     assert out.passed and "flag:contract-role" in out.flags
+
+
+# --- title rules with the real config ---------------------------------------------------------
+
+
+def test_leadership_titles_pass(criteria, now):
+    for title in (
+        "Director, Engineering",
+        "Senior Director, AI Platform",
+        "Associate Director, Data Engineering",
+        "Senior Manager, Cloud Infrastructure",
+        "Sr. Manager, Software Development",
+        "Vice President, Technology",
+        "VP of Engineering",
+        "Head of AI",
+        "Chief Technology Officer",
+    ):
+        assert check(posting(title=title), criteria, now).passed, title
+
+
+def test_engineering_manager_titles_pass(criteria, now):
+    for title in (
+        "Manager, Software Development - Financial Risk",
+        "Manager Software Development, Observability Platform",
+        "Data Platform Engineering Manager",
+        "Manager, Engineering - Digital Onboarding Platform",
+    ):
+        assert check(posting(title=title), criteria, now).passed, title
+
+
+def test_individual_contributor_titles_are_rejected(criteria, now):
+    for title in (
+        "Senior Data Engineer",
+        "Staff Data Engineer",
+        "Principal Engineer, Cyber Technology Operations",
+        "Lead Full Stack Developer",
+        "Senior AI/ML Engineer",
+        "Senior Risk Analyst",
+        "Technical Program Manager",
+        "Penetration Tester",
+    ):
+        out = check(posting(title=title), criteria, now)
+        assert not out.passed and out.bucket == "include:title", title
+
+
+def test_non_technical_managers_are_rejected_not_matched_by_substring(criteria, now):
+    # The engineering-manager rule must not match "AI" inside other words.
+    for title in (
+        "Manager, Airport Operations",
+        "Manager, Aircraft Maintenance",
+        "Dubai Manager",
+        "Manager, Business Enterprise Systems",
+        "Retail Manager",
+        "Product Manager, Payments",
+    ):
+        out = check(posting(title=title), criteria, now)
+        assert not out.passed and out.bucket == "include:title", title
+
+
+def test_lead_developer_hidden_behind_a_director_title_is_excluded(criteria, now):
+    out = check(posting(title="Associate Director - Murex Reporting Lead Developer"), criteria, now)
+    assert not out.passed and out.bucket == "rule:no-lead-developer-titles"
+    # "Lead Engineering" in a leadership title is not "lead engineer".
+    assert check(posting(title="Director, Lead Engineering Programs"), criteria, now).passed

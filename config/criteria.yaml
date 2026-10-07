@@ -34,6 +34,21 @@ rules:
     match: 'assistant vice[- ]president|associate vice[- ]president|\bAVP\b'
     action: exclude
 
+  - name: no-lead-developer-titles   # "Associate Director - Reporting Lead Developer" is an IC role
+    field: title
+    match: '\blead (developer|engineer)\b'
+    action: exclude
+
+  - name: leadership-titles-only
+    field: title
+    match: 'senior manager|sr\.? manager|director|vice[- ]president|\bVP\b|\bSVP\b|\bEVP\b|head of|\bchief\b'
+    action: include
+
+  - name: engineering-manager-titles   # include rules on one field are alternatives
+    field: title
+    match: '\b(engineering|technology|software|data|platform|AI|security|infrastructure|cloud|devops)\s+manager\b|\bmanager,?\s+(of\s+)?(engineering|technology|software|data|platform|AI|security|infrastructure|cloud|devops)\b'
+    action: include
+
   - name: wealthsimple-only-data-engineering
     field: department
     match: 'data (&|and) engineering'

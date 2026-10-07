@@ -1,14 +1,38 @@
 {
  "jobs": [
   {
-   "id": "d8197395-b3ce-4a41-bb58-ecd23a7a205e",
-   "title": "Senior Software Developer, Post-Trade Management",
+   "id": "eeb6b49e-cd1a-4ac0-ab93-67dbc631758d",
+   "title": "Staff Software Developer, Production Engineering",
+   "department": "Data & Engineering",
+   "team": "Platform Engineering",
+   "employmentType": "FullTime",
+   "location": "Remote (Canada)",
+   "secondaryLocations": [],
+   "publishedAt": "2026-08-05T17:29:17.393+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "",
+     "addressCountry": "Canada",
+     "addressLocality": ""
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/eeb6b49e-cd1a-4ac0-ab93-67dbc631758d",
+   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/eeb6b49e-cd1a-4ac0-ab93-67dbc631758d/application",
+   "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
+   "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
+  },
+  {
+   "id": "c51f3ae9-5861-44e7-ab04-264a135910a1",
+   "title": "Senior Software Developer, LLM Infrastructure",
    "department": "Data & Engineering",
    "team": "Engineering",
    "employmentType": "FullTime",
    "location": "Remote (Canada)",
    "secondaryLocations": [],
-   "publishedAt": "2026-09-09T19:37:32.502+00:00",
+   "publishedAt": "2026-08-12T17:26:55.838+00:00",
    "isListed": true,
    "isRemote": true,
    "workplaceType": "Remote",
@@ -19,20 +43,20 @@
      "addressLocality": ""
     }
    },
-   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/d8197395-b3ce-4a41-bb58-ecd23a7a205e",
-   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/d8197395-b3ce-4a41-bb58-ecd23a7a205e/application",
+   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/c51f3ae9-5861-44e7-ab04-264a135910a1",
+   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/c51f3ae9-5861-44e7-ab04-264a135910a1/application",
    "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
    "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
   },
   {
-   "id": "10e867d5-350d-4114-be79-898d4a755125",
-   "title": "Senior Software Developer, AI Platform",
+   "id": "0fd2bdd4-87c1-4642-8111-52c878c8eeb9",
+   "title": "Manager, Software Development - Financial Risk",
    "department": "Data & Engineering",
    "team": "Engineering",
    "employmentType": "FullTime",
    "location": "Remote (Canada)",
    "secondaryLocations": [],
-   "publishedAt": "2026-09-16T15:52:35.300+00:00",
+   "publishedAt": "2026-08-14T14:55:15.746+00:00",
    "isListed": true,
    "isRemote": true,
    "workplaceType": "Remote",
@@ -43,31 +67,20 @@
      "addressLocality": ""
     }
    },
-   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/10e867d5-350d-4114-be79-898d4a755125",
-   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/10e867d5-350d-4114-be79-898d4a755125/application",
+   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/0fd2bdd4-87c1-4642-8111-52c878c8eeb9",
+   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/0fd2bdd4-87c1-4642-8111-52c878c8eeb9/application",
    "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
    "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
   },
   {
-   "id": "87df1a4c-b9b9-4080-b1bd-9424c110a2b7",
-   "title": "Senior/Staff Product Manager, Financial Risk",
-   "department": "Product",
-   "team": "Product Management",
+   "id": "2f079487-b38e-4496-8008-eb7dc6e0f134",
+   "title": "Manager, Tax",
+   "department": "Finance",
+   "team": "Controllers",
    "employmentType": "FullTime",
    "location": "Remote (Canada)",
-   "secondaryLocations": [
-    {
-     "location": "Remote (US)",
-     "address": {
-      "postalAddress": {
-       "addressRegion": "New York",
-       "addressCountry": "United States",
-       "addressLocality": "New York City"
-      }
-     }
-    }
-   ],
-   "publishedAt": "2026-09-29T20:43:24.765+00:00",
+   "secondaryLocations": [],
+   "publishedAt": "2026-08-18T13:39:14.729+00:00",
    "isListed": true,
    "isRemote": true,
    "workplaceType": "Remote",
@@ -78,20 +91,20 @@
      "addressLocality": ""
     }
    },
-   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/87df1a4c-b9b9-4080-b1bd-9424c110a2b7",
-   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/87df1a4c-b9b9-4080-b1bd-9424c110a2b7/application",
+   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/2f079487-b38e-4496-8008-eb7dc6e0f134",
+   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/2f079487-b38e-4496-8008-eb7dc6e0f134/application",
    "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
    "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
   },
   {
-   "id": "feb91bf3-6175-4bb2-a642-94e8779d0e3f",
-   "title": "Senior Lead, Partnerships (Perks & Rewards)",
+   "id": "d7c5d2de-f04c-41d8-b77d-5b0fe999f10b",
+   "title": "Senior Manager, Corporate Development",
    "department": "Finance",
    "team": "Corporate Development",
    "employmentType": "FullTime",
    "location": "Remote (Canada)",
    "secondaryLocations": [],
-   "publishedAt": "2026-09-29T20:05:42.076+00:00",
+   "publishedAt": "2026-08-24T17:20:41.313+00:00",
    "isListed": true,
    "isRemote": true,
    "workplaceType": "Remote",
@@ -102,32 +115,8 @@
      "addressLocality": ""
     }
    },
-   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/feb91bf3-6175-4bb2-a642-94e8779d0e3f",
-   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/feb91bf3-6175-4bb2-a642-94e8779d0e3f/application",
-   "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
-   "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
-  },
-  {
-   "id": "f430ab6a-f0ba-4aba-9630-0c7bee2e7fda",
-   "title": "Senior Advisor/Lead Advisor, Wealth Management",
-   "department": "Commercial & Marketing",
-   "team": "Advisory & Planning",
-   "employmentType": "FullTime",
-   "location": "Remote (Canada)",
-   "secondaryLocations": [],
-   "publishedAt": "2026-09-08T14:32:51.493+00:00",
-   "isListed": true,
-   "isRemote": true,
-   "workplaceType": "Remote",
-   "address": {
-    "postalAddress": {
-     "addressRegion": "",
-     "addressCountry": "Canada",
-     "addressLocality": ""
-    }
-   },
-   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/f430ab6a-f0ba-4aba-9630-0c7bee2e7fda",
-   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/f430ab6a-f0ba-4aba-9630-0c7bee2e7fda/application",
+   "jobUrl": "https://jobs.ashbyhq.com/wealthsimple/d7c5d2de-f04c-41d8-b77d-5b0fe999f10b",
+   "applyUrl": "https://jobs.ashbyhq.com/wealthsimple/d7c5d2de-f04c-41d8-b77d-5b0fe999f10b/application",
    "descriptionHtml": "<h2><strong>Build something people love</strong></h2><p style=\"min-height:1.5em\">Wealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in",
    "descriptionPlain": "BUILD SOMETHING PEOPLE LOVE\n\nWealthsimple is Canada\u2019s leading financial innovator. The company offers a full suite of simple, sophisticated financial products across managed investing, do-it-yourself trading, cryptocurrency, tax filing, spending and saving. Wealthsimple currently serves more than 4 million Canadians and holds over $155 billion in assets under administration. The company was founde"
   }
