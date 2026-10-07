@@ -1,0 +1,31 @@
+# Hard filters. Plain regex/date checks that run before any LLM call.
+# Real level classification (Sr Manager / Director / VP) is the Scorer's job, not this file's.
+
+locations:
+  # A posting passes if ANY of its locations matches one of these.
+  include_patterns:
+    - '\bToronto\b'
+    - '\bGTA\b'
+    - '\bGreater Toronto'
+    - '\b(Mississauga|Brampton|Markham|Vaughan|Richmond Hill|Oakville|Burlington|Pickering|Ajax|Whitby|Oshawa|Etobicoke|Scarborough|North York)\b'
+    - '\bOntario\b'
+    - ',\s*ON\b'
+  allow_remote: true
+  # Remote/hybrid roles pass if they name one of these countries...
+  remote_country_patterns:
+    - '\bCanada\b'
+  # ...or name no country at all (kept and flagged), unless they mention a foreign marker.
+  foreign_markers:
+    - '\b(United States|USA|U\.S\.|US)\b'
+    - '\b(United Kingdom|UK|Ireland|India|Singapore|Australia|Germany|France|Netherlands)\b'
+    - '\b(EMEA|APAC|LATAM)\b'
+
+titles:
+  # Inflated titles some banks use for what is really a senior developer role.
+  exclude_patterns:
+    - 'assistant vice[- ]president'
+    - 'associate vice[- ]president'
+    - '\bAVP\b'
+
+max_age_days: 30
+keep_undated: true
