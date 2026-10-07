@@ -1,6 +1,6 @@
 import html
 import re
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 import httpx
 
@@ -16,6 +16,17 @@ class ATSAdapter(Protocol):
     name: str
 
     def fetch(self, company: Company) -> list[RawPosting]: ...
+
+
+@runtime_checkable
+class Enrichable(Protocol):
+    """Optional: adapters whose list view is thin (Workday) fetch details per posting.
+
+    The pipeline calls this only for postings that already passed the cheap filters and
+    are not yet in the Jobs tab, then re-applies the hard filters to the richer data.
+    """
+
+    def enrich(self, posting: RawPosting) -> RawPosting: ...
 
 
 def make_client() -> httpx.Client:

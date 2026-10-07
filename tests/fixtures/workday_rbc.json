@@ -1,0 +1,183 @@
+{
+ "probe": {
+  "total": 859,
+  "jobPostings": [
+   {
+    "title": "Senior Manager (VP/Associate Director level), Financial Crimes Oversight Testing - Europe",
+    "externalPath": "/job/London-United-Kingdom-of-Great-Britain-and-Northern-Ireland/Senior-Manager--VP-Associate-Director-level---Financial-Crimes-Oversight-Testing---Europe_R-0000163471-2",
+    "locationsText": "London, United Kingdom of Great Britain and Northern Ireland",
+    "postedOn": "Posted Today",
+    "bulletFields": [
+     "R-0000163471"
+    ]
+   }
+  ],
+  "facets": [
+   {
+    "facetParameter": "Country",
+    "descriptor": "Country",
+    "values": [
+     {
+      "descriptor": "Canada",
+      "id": "a30a87ed25634629aa6c3958aa2b91ea",
+      "count": 615
+     },
+     {
+      "descriptor": "United States of America",
+      "id": "bc33aa3152ec42d4995f4791a106ed09",
+      "count": 157
+     },
+     {
+      "descriptor": "Malaysia",
+      "id": "972dc4ba8d454bc0b893ff84b1529077",
+      "count": 48
+     }
+    ]
+   }
+  ],
+  "userAuthenticated": false
+ },
+ "page": {
+  "total": 85,
+  "jobPostings": [
+   {
+    "title": "Director, Conversational Banking",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--Conversational-Banking_R-0000181384-1",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 27 Days Ago",
+    "bulletFields": [
+     "R-0000181384"
+    ]
+   },
+   {
+    "title": "Director, HR Technology",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--HR-Technology_R-0000186552",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 28 Days Ago",
+    "bulletFields": [
+     "R-0000186552"
+    ]
+   },
+   {
+    "title": "Director, DevOps Insights",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--DevOps-Insights_R-0000186471-1",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 8 Days Ago",
+    "bulletFields": [
+     "R-0000186471"
+    ]
+   },
+   {
+    "title": "Director Regulatory Programs",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director-Regulatory-Programs_R-0000186889-1",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 25 Days Ago",
+    "bulletFields": [
+     "R-0000186889"
+    ]
+   },
+   {
+    "title": "Director, Process Engineering",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--Process-Engineering_R-0000188436-1",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 14 Days Ago",
+    "bulletFields": [
+     "R-0000188436"
+    ]
+   }
+  ],
+  "facets": [],
+  "userAuthenticated": false
+ },
+ "detail_path": "/job/TORONTO-Ontario-Canada/Director--Conversational-Banking_R-0000181384-1",
+ "detail": {
+  "jobPostingInfo": {
+   "id": "efe5dd5b21401001614537c8ce770000",
+   "title": "Director, Conversational Banking",
+   "jobDescription": "<div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><p style=\"text-align:left\"><b><u>Job Description</u></b></p></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div><p><b>What is the Opportunity?</b></p><p>We are looking for a visionary and results driven Director of Conversational Banking with a passion for building intelligent conversational AI systems for customer experience across web and mobile platforms. You will be developing and creating innovative technology solutions powering growth ",
+   "location": "TORONTO, Ontario, Canada",
+   "postedOn": "Posted 27 Days Ago",
+   "startDate": "2026-09-09",
+   "timeType": "Full time",
+   "jobReqId": "R-0000181384",
+   "jobPostingId": "Director--Conversational-Banking_R-0000181384-1",
+   "jobPostingSiteId": "RBCGLOBAL1",
+   "country": {
+    "descriptor": "Canada",
+    "id": "a30a87ed25634629aa6c3958aa2b91ea"
+   },
+   "canApply": true,
+   "posted": true,
+   "includeResumeParsing": true,
+   "jobRequisitionLocation": {
+    "descriptor": "RBC WATERPARK PLACE, 88 QUEENS QUAY W:TORONTO",
+    "country": {
+     "descriptor": "Canada",
+     "id": "a30a87ed25634629aa6c3958aa2b91ea",
+     "alpha2Code": "CA"
+    }
+   },
+   "externalUrl": "https://rbc.wd3.myworkdayjobs.com/RBCGLOBAL1/job/TORONTO-Ontario-Canada/Director--Conversational-Banking_R-0000181384-1",
+   "timeLeftToApply": "21 days left to apply",
+   "endDate": "2026-10-28",
+   "jobPostingEndDateAsText": "End Date: October 28, 2026"
+  },
+  "hiringOrganization": {
+   "name": "0000050007 Royal Bank of Canada",
+   "url": ""
+  },
+  "similarJobs": [
+   {
+    "title": "Director, AI Strategy and Product Management",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--AI-Strategy-and-Product-Management_R-0000174810",
+    "timeType": "Full time",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 20 Days Ago",
+    "startDate": "2026-09-16",
+    "timeLeftToApply": "9 days left to apply",
+    "jobPostingEndDateAsText": "End Date: October 16, 2026"
+   },
+   {
+    "title": "Senior Director - Chief Developer and AI Adoption",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Senior-Director---Chief-Developer-and-AI-Adoption_R-0000188623-1",
+    "timeType": "Full time",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 14 Days Ago",
+    "startDate": "2026-09-22",
+    "timeLeftToApply": "23 days left to apply",
+    "jobPostingEndDateAsText": "End Date: October 30, 2026"
+   },
+   {
+    "title": "Director, Product Strategy & Roadmap",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director--Product-Strategy---Roadmap_R-0000182552",
+    "timeType": "Full time",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 4 Days Ago",
+    "startDate": "2026-10-02",
+    "timeLeftToApply": "9 days left to apply",
+    "jobPostingEndDateAsText": "End Date: October 16, 2026"
+   },
+   {
+    "title": "Director - Datacenter Network & Security Operations",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Director---Datacenter-Network---Security-Operations_R-0000183694-1",
+    "timeType": "Full time",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 8 Days Ago",
+    "startDate": "2026-09-28",
+    "timeLeftToApply": "7 days left to apply",
+    "jobPostingEndDateAsText": "End Date: October 14, 2026"
+   },
+   {
+    "title": "Full Stack Developer \u2013 Conversational AI",
+    "externalPath": "/job/TORONTO-Ontario-Canada/Full-Stack-Developer---Conversational-AI_R-0000186389-1",
+    "timeType": "Full time",
+    "locationsText": "TORONTO, Ontario, Canada",
+    "postedOn": "Posted 27 Days Ago",
+    "startDate": "2026-09-09",
+    "timeLeftToApply": "2 days left to apply",
+    "jobPostingEndDateAsText": "End Date: October 9, 2026"
+   }
+  ],
+  "userAuthenticated": false
+ }
+}

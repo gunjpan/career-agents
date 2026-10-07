@@ -2,6 +2,14 @@ from datetime import UTC, datetime
 
 import typer
 from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 from rich.table import Table
 
 from jobagent.settings import get_settings
@@ -23,7 +31,9 @@ def check_setup() -> None:
     storage = get_storage(settings)
     for tab in ("Jobs", "Companies", "Runs", "Evals"):
         rows = [r for r in storage.read_rows(tab) if any(r)]
-        console.print(f"[green]OK[/green] {tab}: {len(rows)} non-empty rows via {settings.storage_backend}")
+        console.print(
+            f"[green]OK[/green] {tab}: {len(rows)} non-empty rows via {settings.storage_backend}"
+        )
 
 
 @app.command("run")
@@ -34,20 +44,45 @@ def run(
     from jobagent.adapters.ats import build_adapters
     from jobagent.adapters.ats.base import make_client
     from jobagent.models.criteria import load_criteria
-    from jobagent.orchestrator.pipeline import run_pipeline
+    from jobagent.orchestrator.pipeline import ProgressEvent, run_pipeline
 
     storage = get_storage(get_settings())
-    with make_client() as client:
+    criteria = load_criteria(criteria_file)
+    progress = Progress(
+        SpinnerColumn(),
+        TextColumn("{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    )
+
+    def show(event: ProgressEvent) -> None:
+        label = f"[{event.company_index}/{event.company_count}] {event.company}: {event.stage}"
+        # total=None renders a pulsing bar while the count is unknown (e.g. fetching postings)
+        progress.update(task, description=label, completed=event.done, total=event.total)
+
+    # Runs in the foreground: the prompt returns only when the whole run has finished.
+    with progress, make_client() as client:
+        task = progress.add_task("Starting", total=None)
         summary = run_pipeline(
-            storage, build_adapters(client), load_criteria(criteria_file), datetime.now(UTC)
+            storage,
+            build_adapters(client, criteria.discovery),
+            criteria,
+            datetime.now(UTC),
+            on_progress=show,
         )
+        progress.update(task, description="Done", completed=1, total=1)
 
     table = Table(title="Run summary")
     for col in ("Company", "Fetched", "Rejected", "Duplicates", "Added", "Flags / error"):
         table.add_column(col)
     for r in summary.results:
         rejected = ", ".join(f"{k} {v}" for k, v in r.rejected.items()) or "-"
-        note = r.error or ", ".join(f"{k} {v}" for k, v in r.flagged.items()) or "-"
+        notes = [f"{k} {v}" for k, v in r.flagged.items()]
+        if r.enrich_failed:
+            notes.append(f"detail failed {r.enrich_failed}")
+        note = r.error or ", ".join(notes) or "-"
         table.add_row(r.company, str(r.fetched), rejected, str(r.duplicates), str(r.added), note)
     console.print(table)
     if summary.skipped:
