@@ -24,6 +24,11 @@ class Storage(Protocol):
         self, tab: str, headers: list[str], records: list[dict[str, str]]
     ) -> None: ...
 
+    def update_records(self, tab: str, key: str, updates: dict[str, dict[str, str]]) -> int:
+        """For each {key value: {column: new value}}, set those cells on the row whose `key`
+        column matches. Other columns are untouched. Returns how many rows were found."""
+        ...
+
 
 def reconcile_headers(tab: str, existing: list[str], expected: list[str]) -> bool:
     """True if columns were added at the end and the header row needs extending.

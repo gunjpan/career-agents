@@ -39,3 +39,19 @@ class CsvStorage:
         self.ensure_headers(tab, headers)
         for rec in records:
             self.append_row(tab, [rec.get(h, "") for h in headers])
+
+    def update_records(self, tab: str, key: str, updates: dict[str, dict[str, str]]) -> int:
+        rows = self.read_rows(tab)
+        if not rows:
+            return 0
+        header = rows[0]
+        key_col, found = header.index(key), 0
+        for row in rows[1:]:
+            row += [""] * (len(header) - len(row))
+            if row[key_col] in updates:
+                found += 1
+                for col, value in updates[row[key_col]].items():
+                    row[header.index(col)] = value
+        with self._path(tab).open("w", newline="") as f:
+            csv.writer(f).writerows(rows)
+        return found
