@@ -1,11 +1,19 @@
 from datetime import UTC, datetime
 
+import pytest
+
 from jobagent.adapters.ats.ashby import AshbyAdapter
 from jobagent.models.company import COMPANIES_HEADERS, Company
 from jobagent.orchestrator.pipeline import run_pipeline
 from jobagent.storage.csv_store import CsvStorage
 
 from .conftest import fixture_client
+
+
+@pytest.fixture
+def criteria(criteria):
+    """Pipeline mechanics, not personal filter choices: keep locations and age, drop the rules."""
+    return criteria.model_copy(update={"rules": []})
 
 
 def seeded_storage(tmp_path, *companies: Company) -> CsvStorage:

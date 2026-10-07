@@ -19,8 +19,14 @@ def now() -> datetime:
 
 
 @pytest.fixture
-def criteria() -> Criteria:
+def real_criteria() -> Criteria:
+    """The user's actual config/criteria.yaml, for tests of the real filter choices."""
     return load_criteria(Path(__file__).parents[1] / "config" / "criteria.yaml")
+
+
+@pytest.fixture
+def criteria(real_criteria: Criteria) -> Criteria:
+    return real_criteria
 
 
 def fixture_client(name: str) -> httpx.Client:

@@ -7,7 +7,7 @@ locations:
     - '\bToronto\b'
     - '\bGTA\b'
     - '\bGreater Toronto'
-    - '\b(Mississauga|Brampton|Markham|Vaughan|Richmond Hill|Oakville|Burlington|Pickering|Ajax|Whitby|Oshawa|Etobicoke|Scarborough|North York)\b'
+    - '\b(Mississauga|Brampton|Markham|Vaughan|Richmond Hill|Oakville|Burlington|Pickering|Ajax|Whitby|Oshawa|Etobicoke|Scarborough|North York|Waterloo)\b'
     - '\bOntario\b'
     - ',\s*ON\b'
   allow_remote: true
@@ -20,12 +20,48 @@ locations:
     - '\b(United Kingdom|UK|Ireland|India|Singapore|Australia|Germany|France|Netherlands)\b'
     - '\b(EMEA|APAC|LATAM)\b'
 
-titles:
-  # Inflated titles some banks use for what is really a senior developer role.
-  exclude_patterns:
-    - 'assistant vice[- ]president'
-    - 'associate vice[- ]president'
-    - '\bAVP\b'
+# Rules: one filter each, as data. Fields: title | department | company | workplace_type.
+# `match` is a case-insensitive regex. Actions:
+#   exclude - reject the posting when it matches
+#   include - if any include rule applies to a field, at least one must match
+#   flag    - keep the posting but add "flag:<name>" to its flags column
+# `companies` (optional) scopes a rule to those companies; omit it to apply to all.
+# Postings with an empty field are never dropped by include rules; they get "<field>_unknown".
+# The run summary counts rejections per rule name, so you can see what each rule hides.
+rules:
+  - name: no-inflated-vp-titles   # banks' "Assistant VP, Lead Developer" is not a leadership role
+    field: title
+    match: 'assistant vice[- ]president|associate vice[- ]president|\bAVP\b'
+    action: exclude
+
+  - name: wealthsimple-only-data-engineering
+    field: department
+    match: 'data (&|and) engineering'
+    action: include
+    companies: [Wealthsimple]
+
+  - name: contract-role   # keep, but make fixed-term roles visible in the Jobs tab
+    field: title
+    match: '\b(contract|temporary|fixed[- ]term|CDD)\b|contrat à durée'
+    action: flag
+
+# For ATSs that need a search query (Workday). Boards that list everything ignore this.
+discovery:
+  country: Canada
+  # Inclusive on purpose: a family filter hides postings silently, so keep adjacent families
+  # and let the Scorer handle the noise. Not covered: e.g. BMO "Strategy & Change".
+  job_family_patterns:
+    - technology
+    - information technology
+    - artificial intelligence
+    - '\bdata\b'
+    - analytics
+    - digital
+  search_terms:
+    - director
+    - vice president
+    - senior manager
+    - head of
 
 max_age_days: 30
 keep_undated: true
