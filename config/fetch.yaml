@@ -1,0 +1,10 @@
+# How long to leave a company alone after fetching it. `jobagent run` skips a company fetched more
+# recently than this; new companies (never fetched) run immediately; `jobagent run --force` ignores it.
+#
+# Greenhouse, Lever and Ashby publish public job-board APIs meant for polling, one request per run.
+# Workday is unofficial and takes dozens of requests per run (plus a detail fetch per new posting),
+# so it waits longer. 20h, not 24h, so a daily scheduled run is never skipped by a few minutes of drift.
+
+default_min_hours: 6
+min_hours:
+  workday: 20

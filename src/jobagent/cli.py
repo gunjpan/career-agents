@@ -20,6 +20,41 @@ app = typer.Typer(help="Job search agent")
 console = Console()
 
 
+def _build_onboarder(settings, client, criteria):
+    """The Onboarder, or None (with a message) when there is no Gemini key."""
+    from jobagent.adapters.ats import build_adapters
+    from jobagent.agents.prompts import load_prompt
+    from jobagent.llm.gemini import GeminiProvider
+    from jobagent.models.onboarding import load_onboarding_config
+    from jobagent.models.scoring import load_scoring_config
+    from jobagent.onboarding.onboard import Onboarder
+
+    if settings.gemini_api_key is None:
+        console.print(
+            "[yellow]GEMINI_API_KEY is not set, so pending companies are not onboarded.[/yellow]"
+        )
+        return None
+    config = load_onboarding_config()
+    pricing = None if config.free_tier else load_scoring_config().pricing_usd_per_mtok[config.model]
+    provider = GeminiProvider(
+        settings.gemini_api_key.get_secret_value(), free_tier=config.free_tier
+    )
+    return Onboarder(provider, config, load_prompt(config.prompt), build_adapters(client, criteria.discovery), client, pricing)  # fmt: skip
+
+
+def _print_onboarding(results, onboarder) -> None:
+    for company, r in results:
+        colour = {"active": "green", "needs_review": "yellow", "pending": "red"}[r.status]
+        target = f" -> {r.ats}/{r.board_id}" if r.ats else ""
+        console.print(
+            f"[{colour}]{r.status:12}[/{colour}] {company.name}{target}\n             {r.reason}"
+        )
+    t = onboarder.tokens
+    console.print(
+        f"[dim]Onboarding model: {t['input']} tokens in, {t['output']} out, ${onboarder.cost_usd:.4f}[/dim]"
+    )
+
+
 @app.callback()
 def main() -> None:
     """Job search agent."""
@@ -40,14 +75,20 @@ def check_setup() -> None:
 @app.command("run")
 def run(
     criteria_file: str = typer.Option("config/criteria.yaml", "--criteria"),
+    force: Annotated[bool, typer.Option("--force", help="Ignore the fetch cooldown")] = False,
+    company: Annotated[
+        list[str] | None, typer.Option("--company", help="Only this company (repeatable)")
+    ] = None,
 ) -> None:
     """Fetch every active company, apply hard filters, dedupe, write new jobs (state: filtered)."""
     from jobagent.adapters.ats import build_adapters
     from jobagent.adapters.ats.base import make_client
     from jobagent.models.criteria import load_criteria
+    from jobagent.models.fetch_policy import load_fetch_policy
     from jobagent.orchestrator.pipeline import ProgressEvent, run_pipeline
 
-    storage = get_storage(get_settings())
+    settings = get_settings()
+    storage = get_storage(settings)
     criteria = load_criteria(criteria_file)
     progress = Progress(
         SpinnerColumn(),
@@ -66,12 +107,25 @@ def run(
     # Runs in the foreground: the prompt returns only when the whole run has finished.
     with progress, make_client() as client:
         task = progress.add_task("Starting", total=None)
+        if any(r.get("status") == "pending" for r in storage.read_records("Companies")):
+            from jobagent.orchestrator.onboarding import run_onboarding
+
+            progress.update(task, description="Onboarding new companies")
+            onboarder = _build_onboarder(settings, client, criteria)
+            if onboarder is not None:
+                results = run_onboarding(storage, onboarder)
+                progress.stop()
+                _print_onboarding(results, onboarder)
+                progress.start()
         summary = run_pipeline(
             storage,
             build_adapters(client, criteria.discovery),
             criteria,
             datetime.now(UTC),
             on_progress=show,
+            policy=load_fetch_policy(),
+            force=force,
+            only={n.lower() for n in company} if company else None,
         )
         progress.update(task, description="Done", completed=1, total=1)
 
@@ -83,11 +137,68 @@ def run(
         notes = [f"{k} {v}" for k, v in r.flagged.items()]
         if r.enrich_failed:
             notes.append(f"detail failed {r.enrich_failed}")
-        note = r.error or ", ".join(notes) or "-"
+        note = r.error or r.cooldown or ", ".join(notes) or "-"
         table.add_row(r.company, str(r.fetched), rejected, str(r.duplicates), str(r.added), note)
     console.print(table)
     if summary.skipped:
         console.print(f"Skipped (not active): {', '.join(summary.skipped)}")
+
+
+@app.command("add-company")
+def add_company_cmd(
+    name: Annotated[str, typer.Argument(help='e.g. "Wealthsimple"')],
+    tier: Annotated[str, typer.Option(help="Priority tier, e.g. A")] = "A",
+    levels: Annotated[
+        str, typer.Option(help="Comma-separated target levels")
+    ] = "senior_manager,director,vp",
+    onboard_now: Annotated[
+        bool, typer.Option("--onboard", help="Find its job platform right away")
+    ] = False,
+) -> None:
+    """Add a company as one `pending` row; the next `jobagent run` finds its job platform."""
+    from jobagent.orchestrator.onboarding import add_company
+
+    storage = get_storage(get_settings())
+    console.print(
+        add_company(storage, name, tier, [x.strip() for x in levels.split(",") if x.strip()])
+    )
+    if onboard_now:
+        onboard_cmd([name], dry_run=False)
+
+
+@app.command("onboard")
+def onboard_cmd(
+    names: Annotated[
+        list[str] | None, typer.Argument(help="Company names; default: every pending company")
+    ] = None,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Show the result without writing to the Sheet")
+    ] = False,
+) -> None:
+    """Find each company's job platform and board id, validated by fetching real postings."""
+    from jobagent.adapters.ats.base import make_client
+    from jobagent.models.criteria import load_criteria
+    from jobagent.orchestrator.onboarding import run_onboarding
+
+    settings = get_settings()
+    with make_client() as client:
+        onboarder = _build_onboarder(settings, client, load_criteria())
+        if onboarder is None:
+            raise typer.Exit(1)
+        if dry_run and names:  # try names that are not in the Sheet at all
+            from jobagent.models.company import Company
+
+            results = [(c, onboarder.onboard(c)) for c in (Company(name=n) for n in names)]
+        else:
+            results = run_onboarding(
+                get_storage(settings),
+                onboarder,
+                names=set(names) if names else None,
+                dry_run=dry_run,
+            )
+        _print_onboarding(results, onboarder)
+        if not results:
+            console.print("Nothing to onboard: no pending companies.")
 
 
 @app.command("score")

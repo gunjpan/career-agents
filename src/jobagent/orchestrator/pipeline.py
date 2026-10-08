@@ -8,6 +8,7 @@ import httpx
 from jobagent.adapters.ats.base import ATSAdapter, Enrichable
 from jobagent.models.company import COMPANIES_HEADERS, Company
 from jobagent.models.criteria import Criteria
+from jobagent.models.fetch_policy import FetchPolicy
 from jobagent.models.job import JOBS_HEADERS, Job, JobState
 from jobagent.orchestrator.dedupe import dedupe_key, job_id
 from jobagent.orchestrator.filters import apply_hard_filters
@@ -25,6 +26,7 @@ class CompanyResult:
     rejected: Counter = field(default_factory=Counter)  # keyed by filter: title/location/age
     flagged: Counter = field(default_factory=Counter)
     error: str = ""
+    cooldown: str = ""  # set when the company was skipped because it was fetched recently
 
 
 @dataclass
@@ -51,6 +53,9 @@ def run_pipeline(
     criteria: Criteria,
     now: datetime,
     on_progress: Callable[[ProgressEvent], None] = lambda event: None,
+    policy: FetchPolicy | None = None,
+    force: bool = False,
+    only: set[str] | None = None,
 ) -> RunSummary:
     """new -> filtered for every fresh posting of every active company. No LLM calls."""
     storage.ensure_headers("Companies", COMPANIES_HEADERS)
@@ -68,13 +73,29 @@ def run_pipeline(
         def report(stage: str, done: int = 0, total: int | None = None, c=company, i=index) -> None:
             on_progress(ProgressEvent(c.name, stage, done, total, i, len(active)))
 
+        if only is not None and company.name.lower() not in only:
+            continue
         result = CompanyResult(company.name)
+        wait = (
+            policy.wait_remaining(company.ats, company.last_fetched, now)
+            if policy and not force
+            else None
+        )
+        if wait:  # fetched too recently: leave the company alone (politeness; avoids being flagged as a bot)
+            ago = (now - company.last_fetched).total_seconds() / 3600
+            result.cooldown = f"fetched {ago:.1f}h ago; next in {wait.total_seconds() / 3600:.1f}h"
+            summary.results.append(result)
+            continue
         summary.results.append(result)
         adapter = adapters.get(company.ats)
         if adapter is None:
             result.error = f"no adapter for ATS {company.ats!r}"
             continue
         report("fetching postings")
+        # Stamped before fetching, so a failing board is not hammered by every rerun either.
+        storage.update_records(
+            "Companies", "name", {company.name: {"last_fetched": now.isoformat(timespec="seconds")}}
+        )
         try:
             postings = adapter.fetch(company)
         except Exception as e:  # noqa: BLE001 - one company's bad response must not stop the run

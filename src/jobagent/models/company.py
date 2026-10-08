@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
 
-COMPANIES_HEADERS = ["name", "tier", "levels", "ats", "board_id", "status", "notes"]
+COMPANIES_HEADERS = ["name", "tier", "levels", "ats", "board_id", "status", "notes", "last_fetched"]
 
 CompanyStatus = Literal["pending", "active", "needs_review", "paused"]
 
@@ -17,6 +18,7 @@ class Company(BaseModel):
     board_id: str = ""
     status: CompanyStatus = "pending"
     notes: str = ""
+    last_fetched: datetime | None = None  # last attempt, successful or not (cooldown clock)
 
     @classmethod
     def from_record(cls, rec: dict[str, str]) -> "Company":
@@ -28,6 +30,9 @@ class Company(BaseModel):
             board_id=rec.get("board_id", "").strip(),
             status=rec.get("status", "").strip().lower() or "pending",
             notes=rec.get("notes", "").strip(),
+            last_fetched=datetime.fromisoformat(rec["last_fetched"])
+            if rec.get("last_fetched")
+            else None,
         )
 
     def to_record(self) -> dict[str, str]:
@@ -39,4 +44,7 @@ class Company(BaseModel):
             "board_id": self.board_id,
             "status": self.status,
             "notes": self.notes,
+            "last_fetched": self.last_fetched.isoformat(timespec="seconds")
+            if self.last_fetched
+            else "",
         }
