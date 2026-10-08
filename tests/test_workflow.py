@@ -79,3 +79,8 @@ def test_the_command_it_runs_exists_and_the_resume_never_touches_the_repo():
     assert "daily" in CliRunner().invoke(app, ["--help"]).output
     ignored = Path(__file__).parents[1].joinpath(".gitignore").read_text()
     assert "master_resume.yaml" in ignored and ".env" in ignored
+
+
+def test_the_package_cache_is_off_because_it_is_an_attack_surface_on_a_public_repo(wf):
+    setup = next(s for s in steps(wf) if s.get("uses", "").startswith("astral-sh/setup-uv"))
+    assert setup["with"]["enable-cache"] is False  # the action's default is 'auto', which caches

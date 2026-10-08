@@ -1,0 +1,59 @@
+# EXAMPLE master resume (a fictional person). Copy this file to config/master_resume.yaml and replace
+# the content with your own TRUE experience. The real file is git-ignored and never leaves your machine
+# (the scheduled run reads it from a GitHub secret).
+#
+# Every bullet needs a unique `id`: the Tailor selects and rewords bullets BY ID and the Verifier traces
+# every claim back to them, so anything not written here can never appear in a generated resume.
+# Optional per-bullet tags (levels, themes) and per-role tech_stack/skills lists are supported.
+
+profile:
+  name: Avery Morgan
+  location: Toronto, ON
+  email: avery@example.com
+summary: >-
+  Engineering leader with 12 years of experience, including 6 years in leadership roles at a
+  regulated financial institution.
+core_strengths:
+  - Engineering Leadership
+  - Cloud Migration
+  - Vendor Management
+  - API Platform Engineering
+experience:
+  - company: Northwind Financial
+    location: Toronto, ON
+    start: 2014-03
+    end: 2026-09
+    roles:
+      - id: nf-director
+        title: Director, Platform Engineering
+        start: 2021-01
+        end: 2026-09
+        bullets:
+          - id: nf-d-1
+            text: Led 28 engineers across three client-facing platforms with a $9MM annual budget.
+          - id: nf-d-2
+            text: Sustained 99.9% availability across the platform portfolio and cut incident response time by 30%.
+          - id: nf-d-3
+            text: Led the migration of 14 applications from on-premises hosting to the cloud and documented the approach adopted by 12 other teams.
+          - id: nf-d-4
+            text: Ran vendor selection, contracting and transition for two third-party payment providers.
+      - id: nf-senior-manager
+        title: Senior Manager, Digital Delivery
+        start: 2018-02
+        end: 2021-01
+        bullets:
+          - id: nf-m-1
+            text: Managed a team of 15 developers and testers delivering mobile and API products.
+          - id: nf-m-2
+            text: Contributed to the redesign of the bank's authentication service, working with architecture and security teams.
+      - id: nf-developer
+        title: Senior Software Developer
+        start: 2014-03
+        end: 2018-02
+        bullets:
+          - id: nf-i-1
+            text: Built RESTful services in Java and Spring Boot used by 2 million customers.
+education:
+  - degree: B.Sc., Computer Science
+    school: Example University
+additional_facts: []

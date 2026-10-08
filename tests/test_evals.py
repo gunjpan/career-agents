@@ -328,3 +328,27 @@ def test_the_report_fingerprints_the_full_instructions_so_profile_changes_are_vi
     fa = next(x for x in a.notes.split("; ") if x.startswith("instructions "))
     fb = next(x for x in b.notes.split("; ") if x.startswith("instructions "))
     assert fa != fb and len(fa.split()[1]) == 8
+
+
+# --- the quickstart's example resume must actually work with the code ---------------------------
+
+
+def test_the_example_master_resume_is_a_valid_starting_point_for_a_new_user():
+    from jobagent.agents.context import render_resume
+    from jobagent.orchestrator.checks import MasterIndex
+
+    example = load_yaml("config/master_resume.example.yaml")
+    master = MasterIndex.from_resume(example)  # every role and bullet id resolves, ids are unique
+    ids = [b["id"] for c in example["experience"] for r in c["roles"] for b in r["bullets"]]
+    assert len(ids) == len(set(ids)) >= 5 and set(ids) <= set(master.bullets)
+    text = render_resume(example, include_ids=True)
+    assert (
+        f"[{ids[0]}]" in text and "avery@example.com" not in text
+    )  # contact details never reach the model
+    assert "example" in Path("config/master_resume.example.yaml").read_text().lower().split("\n")[0]
+
+
+def test_the_license_and_package_metadata_agree():
+    root = Path(__file__).parents[1]
+    assert (root / "LICENSE").read_text().startswith("MIT License")
+    assert 'license = "MIT"' in (root / "pyproject.toml").read_text()

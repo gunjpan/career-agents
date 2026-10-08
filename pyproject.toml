@@ -3,6 +3,8 @@ name = "jobagent"
 version = "0.1.0"
 description = "Multi-agent job search pipeline with a human-approved submit"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
