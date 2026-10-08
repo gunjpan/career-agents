@@ -1,0 +1,35 @@
+# Tailor and Verifier settings. Prices live in scoring.yaml (pricing_usd_per_mtok).
+# Strong tier per CLAUDE.md: Sonnet for judgment-heavy writing and checking.
+
+tailor:
+  model: claude-sonnet-5-5
+  prompt: prompts/tailor.md
+  max_tokens: 6000
+  effort: medium
+
+verifier:
+  model: claude-sonnet-5-5
+  prompt: prompts/verifier.md
+  max_tokens: 4000
+  effort: medium
+
+limits:
+  max_bullets_per_role: 8
+  max_total_bullets: 22
+  max_summary_sentences: 4
+  max_cover_paragraphs: 4
+
+# The Verifier may send the Tailor back this many times. After that the job is blocked.
+max_send_backs: 1
+max_run_cost_usd: 2.00
+drive_subfolder_template: "{company} - {title} - {job_id}"
+
+# Coverletter default OFF
+cover_letter: false
+
+# What the Tailor must keep. Anything it leaves out is added back from the master, word for word
+# (traceable by construction, so no extra Verifier cost).
+#   all_bullets   - every bullet of every role appears; the Tailor only rewords and reorders
+#   all_roles     - every role appears, but the Tailor may drop bullets within a role
+#   tailor_choice - the Tailor decides what to include (the bullet limits above then apply)
+keep: all_bullets

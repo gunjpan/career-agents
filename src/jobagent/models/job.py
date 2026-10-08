@@ -151,4 +151,13 @@ JOBS_HEADERS = [
     "score_cost_usd",
     "scored_at",
     "core_domain_covered",
+    # Tailor and Verifier (Block 4)
+    "tailor_status",  # ready | blocked | error
+    "drive_url",
+    "tailor_attempts",
+    "tailor_cost_usd",
+    "tailor_notes",
+    "tailor_candidates",  # JSON manifest of the live candidate versions
+    "final_candidate",  # the candidate number to apply with; blank while two are awaiting a pick
+    "tailor_total_cost_usd",  # running total over every run, including blocked ones and trashed candidates
 ]
