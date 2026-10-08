@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from jobagent.agents.context import render_posting
 from jobagent.agents.prompts import Prompt
 from jobagent.agents.runner import AgentRun, call_agent
-from jobagent.llm.base import LLMProvider
+from jobagent.llm.base import LLMProvider, check_provider_policy
 from jobagent.models.job import Job
 from jobagent.models.scoring import Pricing
 from jobagent.models.tailoring import TailoringConfig, TailorOutput
@@ -49,6 +49,7 @@ class Tailor:
         pricing: Pricing,
         max_description_chars: int = 12000,
     ) -> None:
+        check_provider_policy(provider, public_data=False)  # these agents receive the resume
         self.provider, self.config, self.prompt = provider, config, prompt
         self.profiles, self.pricing = profiles, pricing
         self.max_chars = max_description_chars

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from jobagent.agents.context import render_posting
 from jobagent.agents.prompts import Prompt
-from jobagent.llm.base import LLMProvider, LLMValidationError
+from jobagent.llm.base import LLMProvider, LLMValidationError, check_provider_policy
 from jobagent.models.job import Job
 from jobagent.models.scoring import ScoreResult, ScorerOutput, ScoringConfig
 
@@ -19,6 +19,7 @@ class Scorer:
         resume_text: str,
         profiles_text: str,
     ) -> None:
+        check_provider_policy(provider, public_data=False)  # these agents receive the resume
         self.provider = provider
         self.config = config
         self.prompt = prompt

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     google_oauth_token_file: str = "secrets/drive-token.json"
     google_oauth_token_json: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None  # also read from the real env var in CI
+    gemini_api_key: SecretStr | None = None  # free tier is fine: only public company names go to it
     sheet_id: str = ""
     drive_folder_id: str = ""
     storage_backend: Literal["sheets", "csv"] = "sheets"

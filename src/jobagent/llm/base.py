@@ -8,6 +8,21 @@ from jobagent.models.scoring import Pricing
 T = TypeVar("T", bound=BaseModel)
 
 
+class PolicyError(Exception):
+    """A provider was wired to an agent it is not allowed to serve. A configuration bug, not a
+    per-job failure, so it is never swallowed as an ordinary LLMError."""
+
+
+def check_provider_policy(provider: object, *, public_data: bool) -> None:
+    """Free API tiers may train on what they see, so they only serve agents that handle public
+    data (CLAUDE.md guardrail). Agents that receive the resume pass public_data=False."""
+    if getattr(provider, "public_data_only", False) and not public_data:
+        raise PolicyError(
+            f"{type(provider).__name__} is a free-tier provider (public data only) and may not "
+            "serve an agent that receives the resume or other private data"
+        )
+
+
 class LLMError(Exception):
     """The call failed (API error, refusal, no usable output). The job is retried next run."""
 
@@ -42,7 +57,10 @@ class LLMResult(Generic[T]):  # noqa: UP046 - T is shared with LLMProvider.compl
 
 class LLMProvider(Protocol):
     """One call, schema-validated. Claude today; Gemini or a local model behind the same
-    interface later, so models can be compared by evals."""
+    interface later, so models can be compared by evals.
+
+    A provider may set `public_data_only = True` (free tiers); see check_provider_policy.
+    """
 
     def complete(
         self,

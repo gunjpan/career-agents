@@ -87,6 +87,7 @@ Repo layout: `agents/`, `adapters/ats/`, `storage/`, `orchestrator/`, `prompts/`
 - Dedupe on company + normalized title + location. A submitted job never returns to `approved`.
 - Hard filters run before any LLM call. Log tokens and cost per run.
 - API keys only in env vars / GitHub secrets. Paid API tiers only (no training on my resume).
+- Free API tiers are allowed for public-data only and for agents accessing public-data.
 
 ## Evals to support
 Scorer level accuracy (90%+), shortlist precision (70%+), Tailor keyword coverage vs untailored,
