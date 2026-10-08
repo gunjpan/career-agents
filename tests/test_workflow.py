@@ -97,13 +97,7 @@ def tests_wf() -> dict:
 
 
 def test_the_test_workflow_uses_no_secrets_and_a_read_only_token(tests_wf):
-    assert (
-        "secrets."
-        not in TESTS.read_text()
-        .replace("NO secrets", "")
-        .replace("uses no secrets", "")
-        .split("jobs:")[1]
-    )
+    assert "${{ secrets" not in TESTS.read_text()  # not a single secret reference
     assert tests_wf["permissions"] == {"contents": "read"}
     assert "env" not in tests_wf and all("env" not in s for s in steps(tests_wf))
 
