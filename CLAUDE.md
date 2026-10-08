@@ -43,7 +43,7 @@ adapters) so models can be compared by evals.
 
 ## Config and data
 - `config/master_resume.yaml` — every true bullet, tagged by level and theme (git-ignored)
-- `config/role_profiles.yaml`, `config/criteria.yaml`
+- `config/role_profiles.yaml`, `config/criteria.local.yaml`
 - `config/answers.yaml` — application answers I approved (git-ignored)
 - `prompts/<agent>.md` — versioned prompts (version logged with every eval)
 - Google Sheet tabs: Jobs, Companies, Runs, Evals. Behind a storage interface
