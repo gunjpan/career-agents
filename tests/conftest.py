@@ -8,6 +8,7 @@ import pytest
 from jobagent.models.company import Company
 from jobagent.models.criteria import Criteria, load_criteria
 from jobagent.models.job import RawPosting
+from jobagent.models.tailoring import TailoringConfig, load_tailoring_config
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = datetime(2026, 10, 6, tzinfo=UTC)
@@ -27,6 +28,12 @@ def real_criteria() -> Criteria:
 @pytest.fixture
 def criteria(real_criteria: Criteria) -> Criteria:
     return real_criteria
+
+
+@pytest.fixture
+def cfg() -> TailoringConfig:
+    """The real config/tailoring.yaml (Tailor, Verifier, limits and the keep setting)."""
+    return load_tailoring_config()
 
 
 def fixture_client(name: str) -> httpx.Client:

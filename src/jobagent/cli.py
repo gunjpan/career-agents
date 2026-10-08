@@ -171,6 +171,182 @@ def score(
         console.print(f"[red]Failed:[/red] {err}")
 
 
+@app.command("shortlist")
+def shortlist() -> None:
+    """Show shortlisted and approved jobs, best fit first. Approve with `jobagent approve`."""
+    rows = [r for r in get_storage(get_settings()).read_records("Jobs")
+            if r["state"] in {"shortlisted", "approved", "ready"}]  # fmt: skip
+    rows.sort(key=lambda r: int(r.get("fit_score") or 0), reverse=True)
+    console.print(f"[bold]{len(rows)} jobs, best fit first[/bold]  (id  fit  level  state)")
+    for r in rows:
+        tailor_state = f" | tailor: {r['tailor_status']}" if r.get("tailor_status") else ""
+        console.print(
+            f"[cyan]{r['job_id']}[/cyan]  {r.get('fit_score', ''):>3}  {r.get('real_level', ''):<14}"
+            f" {r['state']:<11} {r['company']}: {r['title']}{tailor_state}",
+            soft_wrap=True,
+        )
+
+
+@app.command("approve")
+def approve_cmd(
+    job_ids: Annotated[list[str], typer.Argument(help="job_id values from `shortlist`")],
+) -> None:
+    """You approve jobs for tailoring. Only shortlisted jobs can be approved, and only you can."""
+    from jobagent.orchestrator.tailoring import approve
+
+    for job_id, result in approve(get_storage(get_settings()), job_ids).items():
+        colour = "green" if result.startswith("approved") else "red"
+        console.print(f"[{colour}]{job_id}[/{colour}] {result}")
+
+
+@app.command("retailor")
+def retailor_cmd(
+    job_ids: Annotated[list[str], typer.Argument(help="job_id values to re-tailor")],
+) -> None:
+    """You send a tailored or blocked job back for another go; then run `jobagent tailor`."""
+    from jobagent.orchestrator.tailoring import retailor
+
+    for job_id, result in retailor(get_storage(get_settings()), job_ids).items():
+        colour = "green" if result.startswith(("reset", "approved")) else "red"
+        console.print(f"[{colour}]{job_id}[/{colour}] {result}")
+
+
+@app.command("diff")
+def diff_cmd(job_id: Annotated[str, typer.Argument(help="job_id from `shortlist`")]) -> None:
+    """Compare the master resume with a job's candidate version(s), word by word."""
+    from pathlib import Path
+
+    from jobagent.documents.diff import build_diff, render_html, render_terminal
+    from jobagent.models.candidates import CandidateRecord, Manifest
+    from jobagent.storage.drive import DriveStorage
+
+    settings = get_settings()
+    rec = next(
+        (r for r in get_storage(settings).read_records("Jobs") if r["job_id"] == job_id), None
+    )
+    manifest = Manifest.from_cell(rec.get("tailor_candidates") if rec else None)
+    if rec is None or not manifest.candidates:
+        console.print(
+            "[red]No tailored candidates for that job. Run `jobagent tailor` first.[/red]"
+        )
+        raise typer.Exit(1)
+    drive = DriveStorage(settings)
+    records = {
+        c.n: CandidateRecord.model_validate_json(drive.download_bytes(c.json_file_id))
+        for c in manifest.candidates
+    }
+    view = build_diff(records)
+    render_terminal(view, console)
+    out = Path("output/diffs") / f"{job_id}.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render_html(view))
+    console.print(f"\nSide-by-side view: [cyan]{out}[/cyan] (open it in a browser)")
+    if len(manifest.candidates) > 1:
+        console.print(
+            f"Choose with: jobagent pick {job_id} {' or '.join(str(c.n) for c in manifest.candidates)}"
+        )
+
+
+@app.command("pick")
+def pick_cmd(
+    job_id: Annotated[str, typer.Argument(help="job_id from `shortlist`")],
+    candidate: Annotated[int, typer.Argument(help="the candidate number to keep")],
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip the confirmation")] = False,
+) -> None:
+    """Keep one candidate as the final resume; the others go to Drive's Trash (recoverable)."""
+    from jobagent.models.candidates import Manifest
+    from jobagent.orchestrator.tailoring import pick_candidate
+    from jobagent.storage.drive import DriveStorage
+
+    settings = get_settings()
+    storage = get_storage(settings)
+    rec = next((r for r in storage.read_records("Jobs") if r["job_id"] == job_id), None)
+    manifest = Manifest.from_cell(rec.get("tailor_candidates") if rec else None)
+    losers = [c.n for c in manifest.candidates if c.n != candidate]
+    if losers and not yes:
+        typer.confirm(
+            f"Keep candidate {candidate} and move candidate(s) {losers} to Drive's Trash?",
+            abort=True,
+        )
+    result = pick_candidate(storage, DriveStorage(settings), job_id, candidate)
+    console.print(f"[{'green' if result.startswith('picked') else 'red'}]{result}[/]")
+
+
+@app.command("tailor")
+def tailor(
+    job_id: Annotated[
+        list[str] | None, typer.Option("--job-id", help="Only this job (repeatable)")
+    ] = None,
+    retry_blocked: Annotated[bool, typer.Option("--retry", help="Also retry blocked jobs")] = False,
+    cover_letter: Annotated[
+        bool, typer.Option("--cover-letter", help="Also write a cover letter")
+    ] = False,
+) -> None:
+    """Tailor + verify approved jobs, then save resume, cover letter and report to Drive."""
+    from jobagent.agents.context import load_yaml, render_resume
+    from jobagent.agents.prompts import load_prompt
+    from jobagent.agents.tailor import Tailor
+    from jobagent.agents.verifier import Verifier
+    from jobagent.llm.claude import ClaudeProvider
+    from jobagent.models.scoring import load_scoring_config
+    from jobagent.models.tailoring import load_tailoring_config
+    from jobagent.orchestrator.tailoring import run_tailoring
+    from jobagent.storage.drive import DriveStorage
+
+    settings = get_settings()
+    if settings.anthropic_api_key is None:
+        console.print("[red]ANTHROPIC_API_KEY is not set (put it in .env).[/red]")
+        raise typer.Exit(1)
+    config = load_tailoring_config()
+    if cover_letter:  # per-run override of tailoring.yaml
+        config = config.model_copy(update={"cover_letter": True})
+    scoring = load_scoring_config()
+    master = load_yaml("config/master_resume.yaml")
+    text = render_resume(master, include_ids=True)
+    provider = ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value())
+    t_prompt, v_prompt = load_prompt(config.tailor.prompt), load_prompt(config.verifier.prompt)
+    tailor_agent = Tailor(provider, config, t_prompt, text, load_yaml("config/role_profiles.yaml"),
+                          scoring.pricing_usd_per_mtok[config.tailor.model])  # fmt: skip
+    verifier_agent = Verifier(
+        provider, config, v_prompt, text, scoring.pricing_usd_per_mtok[config.verifier.model]
+    )
+
+    progress = Progress(SpinnerColumn(), TextColumn("{task.description}"), BarColumn(), MofNCompleteColumn(),
+                        TimeElapsedColumn(), console=console)  # fmt: skip
+    with progress:
+        task = progress.add_task("Starting", total=None)
+
+        def show(done: int, total: int, title: str) -> None:
+            progress.update(
+                task, description=f"Tailoring: {title[:55]}", completed=done, total=total
+            )
+
+        summary = run_tailoring(
+            get_storage(settings), tailor_agent, verifier_agent, DriveStorage(settings), master, config,
+            today=datetime.now(UTC).date(), only=set(job_id or []) or None, retry_blocked=retry_blocked, on_progress=show,
+        )  # fmt: skip
+        progress.update(task, description="Done", completed=1, total=1)
+
+    table = Table(title="Tailoring summary")
+    for col in (
+        "Company",
+        "Title",
+        "Status",
+        "Attempts",
+        "This run",
+        "Job total",
+        "Folder / notes",
+    ):
+        table.add_column(col, overflow="fold")
+    for o in summary.outcomes:
+        table.add_row(o.company, o.title[:40], o.status, str(o.attempts), f"${o.cost_usd:.3f}", f"${o.total_cost_usd:.3f}",
+                      o.drive_url or "; ".join(o.notes)[:120])  # fmt: skip
+    console.print(table)
+    console.print(f"Total cost: ${summary.cost_usd:.3f}")
+    if summary.stopped:
+        console.print(f"[yellow]Stopped early:[/yellow] {summary.stopped}")
+
+
 @app.command("auth-drive")
 def auth_drive() -> None:
     """One-time: browser consent for Drive, then create the app's root folder."""
