@@ -84,3 +84,42 @@ def test_the_command_it_runs_exists_and_the_resume_never_touches_the_repo():
 def test_the_package_cache_is_off_because_it_is_an_attack_surface_on_a_public_repo(wf):
     setup = next(s for s in steps(wf) if s.get("uses", "").startswith("astral-sh/setup-uv"))
     assert setup["with"]["enable-cache"] is False  # the action's default is 'auto', which caches
+
+
+# --- the test workflow may run on pull requests, so it must be incapable of leaking anything -------
+
+TESTS = Path(__file__).parents[1] / ".github" / "workflows" / "tests.yml"
+
+
+@pytest.fixture(scope="module")
+def tests_wf() -> dict:
+    return yaml.safe_load(TESTS.read_text())
+
+
+def test_the_test_workflow_uses_no_secrets_and_a_read_only_token(tests_wf):
+    assert (
+        "secrets."
+        not in TESTS.read_text()
+        .replace("NO secrets", "")
+        .replace("uses no secrets", "")
+        .split("jobs:")[1]
+    )
+    assert tests_wf["permissions"] == {"contents": "read"}
+    assert "env" not in tests_wf and all("env" not in s for s in steps(tests_wf))
+
+
+def test_the_test_workflow_never_uses_the_dangerous_pull_request_target_trigger(tests_wf):
+    triggers = tests_wf.get(True) or tests_wf.get("on")
+    assert set(triggers) == {
+        "push",
+        "pull_request",
+    }  # pull_request_target would run PR code WITH secrets
+    assert triggers["push"]["branches"] == ["main"]
+
+
+def test_the_test_workflow_pins_actions_and_has_no_cache_and_a_timeout(tests_wf):
+    uses = [s["uses"] for s in steps(tests_wf) if "uses" in s]
+    assert uses and all(re.fullmatch(r"[\w./-]+@[0-9a-f]{40}", u) for u in uses), uses
+    setup = next(s for s in steps(tests_wf) if s.get("uses", "").startswith("astral-sh/setup-uv"))
+    assert setup["with"]["enable-cache"] is False
+    assert all(0 < j["timeout-minutes"] <= 30 for j in tests_wf["jobs"].values())
