@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 
+from jobagent.agents.context import render_posting
 from jobagent.agents.prompts import Prompt
 from jobagent.llm.base import LLMProvider, LLMValidationError
 from jobagent.models.job import Job
@@ -25,18 +26,7 @@ class Scorer:
         self.prefix = f"{prompt.text}\n\n{profiles_text}\n\n{resume_text}"
 
     def build_user_message(self, job: Job) -> str:
-        p = job.posting
-        text = p.description
-        if len(text) > self.config.max_description_chars:
-            text = text[: self.config.max_description_chars] + "\n[posting truncated]"
-        header = [
-            f"Company: {p.company}",
-            f"Title: {p.title}",
-            f"Department: {p.department or 'unknown'}",
-            f"Location: {' | '.join(p.locations) or 'unknown'}",
-            f"Workplace type: {p.workplace_type or 'unknown'}",
-        ]
-        return "<posting>\n" + "\n".join(header) + f"\n\n{text}\n</posting>"
+        return render_posting(job, self.config.max_description_chars)
 
     def score(self, job: Job) -> ScoreResult:
         """Raises LLMError if the call fails; retries once if the output fails validation."""

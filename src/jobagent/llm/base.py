@@ -53,4 +53,5 @@ class LLMProvider(Protocol):
         schema: type[T],
         max_tokens: int,
         temperature: float | None = 0.0,  # None = leave it to the model's default
+        effort: str | None = None,  # thinking depth on models that support it; None = default
     ) -> LLMResult[T]: ...

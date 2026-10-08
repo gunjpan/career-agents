@@ -20,10 +20,13 @@ class ClaudeProvider:
         schema: type[T],
         max_tokens: int,
         temperature: float | None = 0.0,
+        effort: str | None = None,
     ) -> LLMResult[T]:
         # parse() has no sampling arguments, and newer Claude models reject them, so
         # temperature goes through extra_body and only when the config sets it.
-        extra = {} if temperature is None else {"extra_body": {"temperature": temperature}}
+        extra: dict = {} if temperature is None else {"extra_body": {"temperature": temperature}}
+        if effort is not None:
+            extra["output_config"] = {"effort": effort}
         try:
             resp = self.client.messages.parse(
                 model=model,
