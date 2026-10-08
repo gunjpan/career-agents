@@ -42,6 +42,29 @@ def _build_onboarder(settings, client, criteria):
     return Onboarder(provider, config, load_prompt(config.prompt), build_adapters(client, criteria.discovery), client, pricing)  # fmt: skip
 
 
+def _build_scorer(settings, config_file: str = "config/scoring.yaml"):
+    """(Scorer, ScoringConfig, Prompt) for the Claude-based Level and Fit Scorer."""
+    from jobagent.agents.context import (
+        load_master_resume,
+        load_yaml,
+        render_profiles,
+        render_resume,
+    )
+    from jobagent.agents.prompts import load_prompt
+    from jobagent.agents.scorer import Scorer
+    from jobagent.llm.claude import ClaudeProvider
+    from jobagent.models.scoring import load_scoring_config
+
+    config = load_scoring_config(config_file)
+    prompt = load_prompt(config.prompt)
+    scorer = Scorer(
+        ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value()),
+        config, prompt, render_resume(load_master_resume(settings)),
+        render_profiles(load_yaml("config/role_profiles.yaml")),
+    )  # fmt: skip
+    return scorer, config, prompt
+
+
 def _print_onboarding(results, onboarder) -> None:
     for company, r in results:
         colour = {"active": "green", "needs_review": "yellow", "pending": "red"}[r.status]
@@ -201,6 +224,44 @@ def onboard_cmd(
             console.print("Nothing to onboard: no pending companies.")
 
 
+@app.command("daily")
+def daily(
+    no_score: Annotated[
+        bool, typer.Option("--no-score", help="Fetch and filter only (free)")
+    ] = False,
+) -> None:
+    """The scheduled job: onboard new companies, fetch and filter, score. Safe for a public log."""
+    import os
+    from datetime import UTC, datetime
+    from pathlib import Path
+
+    from jobagent.adapters.ats import build_adapters
+    from jobagent.adapters.ats.base import make_client
+    from jobagent.models.criteria import load_criteria
+    from jobagent.models.fetch_policy import load_fetch_policy
+    from jobagent.orchestrator.daily import run_daily
+
+    settings = get_settings()
+    storage = get_storage(settings)
+    criteria = load_criteria()
+    scorer = scoring_config = prompt = None
+    if not no_score and settings.anthropic_api_key is not None:
+        scorer, scoring_config, prompt = _build_scorer(settings)
+    with make_client() as client:
+        onboarder = _build_onboarder(settings, client, criteria)
+        summary = run_daily(
+            storage, build_adapters(client, criteria.discovery), criteria, load_fetch_policy(),
+            now=datetime.now(UTC), clock=lambda: datetime.now(UTC), onboarder=onboarder, scorer=scorer,
+            scoring_config=scoring_config, prompt_version=prompt.version if prompt else 0,
+        )  # fmt: skip
+    markdown = summary.to_markdown()
+    console.print(markdown, markup=False)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):  # the summary page on the Actions run
+        with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as f:
+            f.write(markdown)
+    raise typer.Exit(summary.exit_code)
+
+
 @app.command("score")
 def score(
     limit: int = typer.Option(None, "--limit", "-n", help="Score at most this many jobs"),
@@ -210,26 +271,13 @@ def score(
     config_file: str = typer.Option("config/scoring.yaml", "--config"),
 ) -> None:
     """Score `filtered` jobs with the Level + Fit Scorer (uses the Anthropic API, costs money)."""
-    from jobagent.agents.context import load_yaml, render_profiles, render_resume
-    from jobagent.agents.prompts import load_prompt
-    from jobagent.agents.scorer import Scorer
-    from jobagent.llm.claude import ClaudeProvider
-    from jobagent.models.scoring import load_scoring_config
     from jobagent.orchestrator.scoring import log_run, run_scoring
 
     settings = get_settings()
     if settings.anthropic_api_key is None:
         console.print("[red]ANTHROPIC_API_KEY is not set (put it in .env).[/red]")
         raise typer.Exit(1)
-    config = load_scoring_config(config_file)
-    prompt = load_prompt(config.prompt)
-    scorer = Scorer(
-        ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value()),
-        config,
-        prompt,
-        render_resume(load_yaml("config/master_resume.yaml")),
-        render_profiles(load_yaml("config/role_profiles.yaml")),
-    )
+    scorer, config, prompt = _build_scorer(settings, config_file)
     storage = get_storage(settings)
 
     progress = Progress(
@@ -394,7 +442,7 @@ def tailor(
     ] = False,
 ) -> None:
     """Tailor + verify approved jobs, then save resume, cover letter and report to Drive."""
-    from jobagent.agents.context import load_yaml, render_resume
+    from jobagent.agents.context import load_master_resume, load_yaml, render_resume
     from jobagent.agents.prompts import load_prompt
     from jobagent.agents.tailor import Tailor
     from jobagent.agents.verifier import Verifier
@@ -412,7 +460,7 @@ def tailor(
     if cover_letter:  # per-run override of tailoring.yaml
         config = config.model_copy(update={"cover_letter": True})
     scoring = load_scoring_config()
-    master = load_yaml("config/master_resume.yaml")
+    master = load_master_resume(settings)
     text = render_resume(master, include_ids=True)
     provider = ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value())
     t_prompt, v_prompt = load_prompt(config.tailor.prompt), load_prompt(config.verifier.prompt)
