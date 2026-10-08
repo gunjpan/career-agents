@@ -103,21 +103,12 @@ def test_the_cli_command_runs_to_the_end_with_no_keys(monkeypatch):
 # --- the recording itself ------------------------------------------------------------------------
 
 
-def test_the_committed_recording_is_complete_and_free_of_private_names():
+def test_the_committed_recording_is_complete_and_free_of_private_data():
+    from .conftest import assert_public_safe
+
     data = json.loads(RECORDING.read_text())
     assert len(data["responses"]) == 6 and data["meta"]["recorded_at"] and data["meta"]["models"]
-    blob = RECORDING.read_text().lower()
-    for private in (
-        "gunjan",
-        "pandya",
-        "wealthsimple",
-        "scotiabank",
-        "rbc",
-        "bmo",
-        "cibc",
-        "@live.com",
-    ):
-        assert private not in blob, private
+    assert_public_safe(RECORDING.read_text(), RECORDING.name)
 
 
 def test_a_changed_prompt_no_longer_matches_the_recording_so_the_demo_says_so(demo):

@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -58,3 +59,36 @@ def posting(**kw) -> RawPosting:
         "posted_at": datetime(2026, 9, 20, tzinfo=UTC),
     }
     return RawPosting(**{**base, **kw})
+
+
+# --- public-repo safety helpers ------------------------------------------------------------------
+
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_PHONE = re.compile(r"\b\d{3}[-. ]\d{3}[-. ]\d{4}\b")
+PRIVATE_TERMS_FILE = (
+    Path(__file__).parents[1] / "config" / "private_terms.txt"
+)  # git-ignored, one term per line
+
+
+def private_terms() -> list[str]:
+    """Your own identifiers and targets, kept OUT of the repo so the guards do not leak them."""
+    if not PRIVATE_TERMS_FILE.exists():
+        return []
+    return [
+        t.strip().lower()
+        for t in PRIVATE_TERMS_FILE.read_text().splitlines()
+        if t.strip() and not t.startswith("#")
+    ]
+
+
+def assert_public_safe(text: str, where: str) -> None:
+    """No real email address or phone number, and none of the private terms, anywhere in `text`."""
+    emails = {
+        e
+        for e in _EMAIL.findall(text)
+        if not e.lower().endswith(("@example.com", "@example.org", "@example.invalid"))
+    }
+    assert not emails, f"{where}: contains email addresses {sorted(emails)}"
+    assert not _PHONE.search(text), f"{where}: contains a phone number"
+    for term in private_terms():
+        assert term not in text.lower(), f"{where}: contains a private term"

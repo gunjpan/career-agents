@@ -24,3 +24,6 @@ output/
 
 # personal filter rules (may name the companies you target); a generic example is committed
 config/criteria.local.yaml
+
+# your own identifiers/targets, read only by local tests so the public guards do not leak them
+config/private_terms.txt

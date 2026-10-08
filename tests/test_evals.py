@@ -58,22 +58,10 @@ def test_every_target_level_is_covered_and_most_cases_are_traps():
 
 
 def test_the_eval_data_is_fictional_and_public_safe():
-    blob = " ".join(
-        Path(p).read_text().lower()
-        for p in (CONFIG.scorer_cases, CONFIG.verifier_cases, CONFIG.master_resume)
-    )
-    for real in (
-        "wealthsimple",
-        "royal bank",
-        "rbc",
-        "bmo",
-        "cibc",
-        "scotiabank",
-        "gunjan",
-        "pandya",
-        "td bank",
-    ):
-        assert real not in blob, real
+    from .conftest import assert_public_safe
+
+    for p in (CONFIG.scorer_cases, CONFIG.verifier_cases, CONFIG.master_resume):
+        assert_public_safe(Path(p).read_text(), p)
 
 
 def test_clean_drafts_really_are_clean_under_the_code_checks():
