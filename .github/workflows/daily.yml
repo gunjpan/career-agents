@@ -14,7 +14,7 @@ on:
   # 11:00 UTC is 7:00 in Toronto during daylight time and 6:00 in standard time.
   # GitHub can start scheduled runs 15-30+ minutes late when it is busy; that is normal.
   schedule:
-    - cron: "0 11 * * *"
+    - cron: "11 22 * * *"
   # Adds a "Run workflow" button in the Actions tab, so you can test without waiting a day.
   workflow_dispatch:
   # Deliberately NOT triggered by push or pull_request: on a public repo, other people can open
