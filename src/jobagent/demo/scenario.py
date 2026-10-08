@@ -260,15 +260,19 @@ def run_demo(
     # 8. Wrap up ----------------------------------------------------------------------------------
     _step(console, 8, "Result", pause)
     result.model_calls = getattr(provider, "calls", 0)
-    wrap = Table.grid(padding=(0, 2))
-    wrap.add_row("Postings seen / kept / scored / shortlisted", f"{result.fetched} / {result.fetched - result.filtered_out} / {result.scored} / {result.shortlisted}")  # fmt: skip
+    wrap = Table(show_header=True, header_style="bold", title="What the pipeline did")
+    wrap.add_column("Step")
+    wrap.add_column("Result")
+    wrap.add_row("Postings seen", str(result.fetched))
+    wrap.add_row("Kept after hard filters", str(result.fetched - result.filtered_out))
+    wrap.add_row("Scored", str(result.scored))
+    wrap.add_row("Shortlisted", str(result.shortlisted))
     wrap.add_row(
         "Resume tailored and verified",
         f"{result.tailor_status} ({result.claims_checked} claims traced)",
     )
-    wrap.add_row(
-        "Model calls replayed, recorded cost", f"{result.model_calls}, ${result.cost_usd:.4f}"
-    )
+    wrap.add_row("Model calls replayed", str(result.model_calls))
+    wrap.add_row("Recorded cost", f"${result.cost_usd:.4f}")
     wrap.add_row("Submitted anywhere", "[bold]nothing[/bold]: a human submits, never the pipeline")
     console.print(wrap)
     return result
