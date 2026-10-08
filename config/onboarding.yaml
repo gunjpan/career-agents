@@ -1,0 +1,11 @@
+# Company Onboarding: name -> careers site, job platform (ATS), board id. Validated by fetching a
+# real posting. Only a public company name is sent to the model, so the free Gemini tier is allowed
+# (CLAUDE.md: free tiers are for public data only). Set free_tier: false if you move to a paid key.
+
+model: gemini-3.5-flash-lite
+prompt: prompts/onboarding.md
+free_tier: true
+max_tokens: 800
+max_candidate_urls: 3
+page_timeout_s: 15
+request_delay_s: 0.5

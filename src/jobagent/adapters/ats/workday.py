@@ -116,6 +116,12 @@ class WorkdayAdapter:
         resp.raise_for_status()
         return resp.json()
 
+    def probe(self, company: Company) -> int:
+        """How many postings the board reports, from one request (used to validate a new board)."""
+        wd, tenant, site = parse_board_id(company.board_id)
+        data = self._post_jobs(self._api(wd, tenant, site), {}, 0, 1, "")
+        return int(data.get("total", 0))
+
     def fetch(self, company: Company) -> list[RawPosting]:
         wd, tenant, site = parse_board_id(company.board_id)
         api = self._api(wd, tenant, site)
