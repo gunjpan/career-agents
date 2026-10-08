@@ -307,6 +307,10 @@ def eval_cmd(
 @app.command("demo")
 def demo(
     fast: Annotated[bool, typer.Option("--fast", help="No pauses between steps")] = False,
+    pace: Annotated[
+        float,
+        typer.Option("--pace", min=0.0, help="Seconds per step (default 1.2; try 7 to record)"),
+    ] = 1.2,
     record: Annotated[
         bool,
         typer.Option(
@@ -325,7 +329,8 @@ def demo(
     from jobagent.demo.replay import RECORDING, RecordingProvider, ReplayMiss, ReplayProvider
     from jobagent.demo.scenario import run_demo
 
-    pause = (lambda s: None) if fast else time.sleep
+    scale = pace / 1.2  # the built-in pauses add up to 1.2 s per step
+    pause = (lambda s: None) if fast else (lambda s: time.sleep(s * scale))
     with tempfile.TemporaryDirectory(prefix="jobagent-demo-") as tmp:
         workdir = Path(tmp)
         if record:
