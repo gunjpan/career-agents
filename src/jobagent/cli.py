@@ -3,18 +3,11 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    TimeElapsedColumn,
-)
 from rich.table import Table
 
 from jobagent.settings import get_settings
 from jobagent.storage import get_storage
+from jobagent.ui import make_progress
 
 app = typer.Typer(help="Job search agent")
 console = Console()
@@ -115,14 +108,7 @@ def run(
     settings = get_settings()
     storage = get_storage(settings)
     criteria = load_criteria(criteria_file, settings)
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    )
+    progress = make_progress(console)
 
     def show(event: ProgressEvent) -> None:
         label = f"[{event.company_index}/{event.company_count}] {event.company}: {event.stage}"
@@ -392,14 +378,7 @@ def score(
     scorer, config, prompt = _build_scorer(settings, config_file)
     storage = get_storage(settings)
 
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    )
+    progress = make_progress(console)
     started = datetime.now(UTC)
     with progress:
         task = progress.add_task("Starting", total=None)
@@ -582,8 +561,7 @@ def tailor(
         provider, config, v_prompt, text, scoring.pricing_usd_per_mtok[config.verifier.model]
     )
 
-    progress = Progress(SpinnerColumn(), TextColumn("{task.description}"), BarColumn(), MofNCompleteColumn(),
-                        TimeElapsedColumn(), console=console)  # fmt: skip
+    progress = make_progress(console)
     with progress:
         task = progress.add_task("Starting", total=None)
 
