@@ -1,3 +1,4 @@
+import hashlib
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -78,11 +79,22 @@ def score_results(
         for c, run in runs if run.output.real_level != c.label_level
     ]  # fmt: skip
     failures += [f"{r.case.id}: model call failed ({r.error})" for r in results if r.error]
+
+    def accuracy(split: str) -> Metric | None:
+        part = [(c, run) for c, run in runs if c.split == split]
+        if not part or len(part) == len(runs):
+            return None  # nothing to compare when there is only one split
+        return Metric(
+            f"accuracy_{split}",
+            sum(run.output.real_level == c.label_level for c, run in part) / len(part),
+        )
+
     metrics = [
         Metric("scorer_level_accuracy", exact / n, targets.scorer_level_accuracy),
         Metric("scorer_within_one_level", within / n, targets.scorer_within_one_level),
         Metric("title_mismatch_flag_accuracy", flag / n),  # informational
     ]
+    metrics += [m for m in (accuracy("dev"), accuracy("held_out")) if m]
     if steady:
         metrics.append(Metric("run_to_run_agreement", sum(steady) / len(steady)))  # informational
     confusion = Counter(
@@ -90,9 +102,11 @@ def score_results(
         for c, run in runs
         if run.output.real_level != c.label_level
     )
-    notes = "; ".join(
-        filter(None, [stopped, *(f"{a}->{b} x{k}" for (a, b), k in confusion.items())])
-    )
+    # Fingerprint of everything the model was told (prompt + level profiles + resume): a change to
+    # the profiles alters scores but not the prompt version, so the version alone is not enough.
+    fingerprint = hashlib.sha1(scorer.prefix.encode()).hexdigest()[:8]
+    confusions = (f"{a}->{b} x{k}" for (a, b), k in confusion.items())
+    notes = "; ".join(filter(None, [stopped, f"instructions {fingerprint}", *confusions]))
     return EvalReport(
         "scorer",
         scorer.config.model,

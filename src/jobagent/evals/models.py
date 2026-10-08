@@ -25,6 +25,9 @@ class ScorerCase(BaseModel):
     description: str
     label_level: Level  # the TRUE level, judged from scope and not from the title
     title_matches_level: bool  # False for the traps where the title overstates or understates it
+    # held_out cases were added AFTER a fix was designed, to check the fix did not just memorise the
+    # cases that exposed the problem.
+    split: Literal["dev", "held_out"] = "dev"
 
 
 class VerifierCase(BaseModel):

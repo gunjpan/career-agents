@@ -114,3 +114,54 @@
     Officer. You will shape platform strategy, manage the executive relationship with operations and
     finance, and lead organization-wide hiring and succession planning. 15+ years of experience
     including leading multiple director-level leaders.
+
+# --- held-out: added after the first baseline, to test a fix against cases it was not shaped on ----
+
+- id: h1-team-lead-title
+  split: held_out
+  company: Silverline Media
+  title: Team Lead, Backend Engineering
+  label_level: manager
+  title_matches_level: true
+  description: >-
+    Silverline is looking for a Team Lead to guide a backend team of 5 engineers building our content
+    delivery APIs. You will plan the team's sprints, hold weekly one-on-ones, and unblock people, and
+    you will still write code for roughly 40% of your time. You report to the Senior Manager of
+    Engineering. 5+ years of backend development and a track record of mentoring.
+
+- id: h2-avp-small-squad
+  split: held_out
+  company: Redwood Trust
+  title: Assistant Vice President, Data Engineering
+  label_level: manager
+  title_matches_level: false
+  description: >-
+    The AVP, Data Engineering leads a squad of 5 data engineers who maintain the bank's reporting
+    pipelines. You assign work, review designs, and remain hands-on, building and tuning Spark jobs
+    yourself most weeks. You report to the Director of Data Platforms and have no budget
+    responsibility. 6+ years of data engineering; AVP is a grade in Redwood's title structure.
+
+- id: h3-staff-engineer-no-reports
+  split: held_out
+  company: Orchard Software
+  title: Staff Data Engineer
+  label_level: individual_contributor
+  title_matches_level: false
+  description: >-
+    As a Staff Data Engineer you will own the architecture of Orchard's analytics platform and set
+    standards that three teams follow. You will lead cross-team technical initiatives, mentor senior
+    engineers, and write production code. You have no direct reports and work with the Senior Manager
+    of Data Engineering. 10+ years of experience building large-scale data systems.
+
+- id: h4-chief-technology-officer
+  split: held_out
+  company: Brightwater Energy
+  title: Chief Technology Officer
+  label_level: executive
+  title_matches_level: true
+  description: >-
+    Brightwater seeks a Chief Technology Officer to lead technology across the company: about 420
+    people in software, data, cybersecurity and IT operations, reporting through five vice
+    presidents. You report to the CEO, sit on the executive committee, own the company-wide
+    technology budget of $90 million, and present technology strategy to the board. 20+ years of
+    experience including senior executive leadership.

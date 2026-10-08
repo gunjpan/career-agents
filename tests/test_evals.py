@@ -37,10 +37,14 @@ MASTER = load_yaml(CONFIG.master_resume)
 # --- the datasets are what we claim they are ---------------------------------------------------
 
 
-def test_there_are_fifteen_cases_with_unique_ids():
-    assert len(SCORER_CASES) == 9 and len(VERIFIER_CASES) == 6
+def test_there_are_at_least_fifteen_cases_with_unique_ids_and_a_held_out_split():
+    assert len(SCORER_CASES) + len(VERIFIER_CASES) >= 15 and len(VERIFIER_CASES) == 6
     ids = [c.id for c in [*SCORER_CASES, *VERIFIER_CASES]]
-    assert len(set(ids)) == 15
+    assert len(set(ids)) == len(ids)
+    assert (
+        sum(c.split == "held_out" for c in SCORER_CASES) >= 3
+        and sum(c.split == "dev" for c in SCORER_CASES) == 9
+    )
 
 
 def test_every_target_level_is_covered_and_most_cases_are_traps():
@@ -104,29 +108,38 @@ def test_layer_labels_agree_with_case_kinds():
 # --- scorer eval metrics (fake model, no cost) ------------------------------------------------
 
 
-def make_scorer(levels: list[str], flags: list[bool] | None = None):
-    flags = flags or [c.title_matches_level for c in SCORER_CASES]
+DEV = [
+    c for c in SCORER_CASES if c.split == "dev"
+]  # the original nine; thresholds below assume 9 cases
+
+
+def make_scorer(levels: list[str], flags: list[bool] | None = None, cases=None):
+    flags = flags or [c.title_matches_level for c in (cases or SCORER_CASES)]
     outs = [
         output(real_level=lv, title_matches_level=f) for lv, f in zip(levels, flags, strict=True)
     ]
     return Scorer(ScorerProvider(outs), load_scoring_config(), Prompt(7, "P"), "resume", "profiles")
 
 
-def perfect() -> list[str]:
-    return [c.label_level for c in SCORER_CASES]
+def perfect(cases=None) -> list[str]:
+    return [c.label_level for c in (cases or SCORER_CASES)]
 
 
 def test_a_perfect_scorer_meets_every_target():
     report = run_scorer_eval(make_scorer(perfect()), SCORER_CASES, CONFIG.targets)
     by = {m.name: m for m in report.metrics}
     assert by["scorer_level_accuracy"].value == 1.0 and report.passed and report.failures == []
-    assert (report.model, report.prompt_version, report.cases) == ("claude-haiku-4-5", 7, 9)
+    assert (report.model, report.prompt_version, report.cases) == (
+        "claude-haiku-4-5",
+        7,
+        len(SCORER_CASES),
+    )
 
 
 def test_one_miss_in_nine_fails_the_ninety_percent_target_and_names_the_case():
-    levels = perfect()
+    levels = perfect(DEV)
     levels[3] = "senior_manager"  # the Principal Engineer (an IC) rated two levels too high
-    report = run_scorer_eval(make_scorer(levels), SCORER_CASES, CONFIG.targets)
+    report = run_scorer_eval(make_scorer(levels, cases=DEV), DEV, CONFIG.targets)
     by = {m.name: m for m in report.metrics}
     assert (
         by["scorer_level_accuracy"].value == pytest.approx(8 / 9)
@@ -139,24 +152,21 @@ def test_one_miss_in_nine_fails_the_ninety_percent_target_and_names_the_case():
 
 
 def test_within_one_level_tolerates_adjacent_misses_but_not_two_away():
-    near = perfect()
+    near = perfect(DEV)
     near[2] = "senior_manager"  # manager -> senior_manager: one level off
     by = {
-        m.name: m for m in run_scorer_eval(make_scorer(near), SCORER_CASES, CONFIG.targets).metrics
+        m.name: m
+        for m in run_scorer_eval(make_scorer(near, cases=DEV), DEV, CONFIG.targets).metrics
     }
     assert (
         by["scorer_within_one_level"].passed is True and by["scorer_level_accuracy"].passed is False
     )
-    far = perfect()
+    far = perfect(DEV)
     far[3] = "director"  # individual_contributor -> director: three levels off
-    assert {
-        m.name: m for m in run_scorer_eval(make_scorer(far), SCORER_CASES, CONFIG.targets).metrics
-    }["scorer_within_one_level"].passed is False
-    assert (
-        distance("manager", "vp") == 3
-        and distance("vp", "vp") == 0
-        and set(LEVELS) >= {c.label_level for c in SCORER_CASES}
-    )
+    report = run_scorer_eval(make_scorer(far, cases=DEV), DEV, CONFIG.targets)
+    assert {m.name: m for m in report.metrics}["scorer_within_one_level"].passed is False
+    assert distance("manager", "vp") == 3 and distance("vp", "vp") == 0
+    assert set(LEVELS) >= {c.label_level for c in SCORER_CASES}
 
 
 def test_title_mismatch_detection_is_reported_but_not_a_pass_fail_target():
@@ -184,7 +194,7 @@ def test_the_scorer_eval_stops_at_the_spend_cap():
     report = run_scorer_eval(
         make_scorer(perfect()), SCORER_CASES, CONFIG.targets, max_cost_usd=0.0001
     )
-    assert report.cases < 9 and "spend cap" in report.notes
+    assert report.cases < len(SCORER_CASES) and "spend cap" in report.notes
 
 
 # --- verifier eval ------------------------------------------------------------------------
@@ -291,3 +301,30 @@ def test_the_yaml_data_files_use_only_known_keys():
     for path in (CONFIG.scorer_cases, CONFIG.verifier_cases):
         for case in yaml.safe_load(Path(path).read_text()):
             assert "id" in case
+
+
+def test_accuracy_is_reported_separately_for_dev_and_held_out_cases():
+    levels = perfect()
+    first_held_out = next(i for i, c in enumerate(SCORER_CASES) if c.split == "held_out")
+    levels[first_held_out] = "vp"  # break exactly one held-out case
+    by = {
+        m.name: m
+        for m in run_scorer_eval(make_scorer(levels), SCORER_CASES, CONFIG.targets).metrics
+    }
+    assert by["accuracy_dev"].value == 1.0 and by["accuracy_held_out"].value < 1.0
+    assert by["accuracy_held_out"].passed is None  # informational: the target applies to the total
+
+
+def test_the_report_fingerprints_the_full_instructions_so_profile_changes_are_visible():
+    a = run_scorer_eval(make_scorer(perfect()), SCORER_CASES, CONFIG.targets)
+    other = Scorer(
+        ScorerProvider([output() for _ in SCORER_CASES]),
+        load_scoring_config(),
+        Prompt(7, "P"),
+        "resume",
+        "DIFFERENT PROFILES",
+    )
+    b = run_scorer_eval(other, SCORER_CASES, CONFIG.targets)
+    fa = next(x for x in a.notes.split("; ") if x.startswith("instructions "))
+    fb = next(x for x in b.notes.split("; ") if x.startswith("instructions "))
+    assert fa != fb and len(fa.split()[1]) == 8
