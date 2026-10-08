@@ -1,4 +1,4 @@
-# jobagent
+# JobAgent
 
 ![tests](https://github.com/gunjpan/career-agents/actions/workflows/tests.yml/badge.svg)
 
