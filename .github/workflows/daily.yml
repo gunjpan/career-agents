@@ -57,4 +57,5 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           MASTER_RESUME_YAML: ${{ secrets.MASTER_RESUME_YAML }}
+          CRITERIA_YAML: ${{ secrets.CRITERIA_YAML }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
