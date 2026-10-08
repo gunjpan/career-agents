@@ -1,0 +1,60 @@
+# Daily job-search run: onboard new companies, fetch + filter postings, score the new ones.
+# It never approves, tailors or submits anything: those stay human steps.
+#
+# HOW THIS FILE WORKS
+#  - GitHub reads it from the default branch and starts a run whenever a trigger below fires.
+#  - Each job runs on a brand-new virtual machine that is thrown away afterwards, so nothing
+#    from your laptop exists there (no .env, no git-ignored files). Secrets are the way in.
+#  - This repo is PUBLIC, so the logs are public: the command prints counts and costs only.
+
+name: daily
+
+on:
+  # `schedule` uses cron in UTC (minute hour day-of-month month day-of-week).
+  # 11:00 UTC is 7:00 in Toronto during daylight time and 6:00 in standard time.
+  # GitHub can start scheduled runs 15-30+ minutes late when it is busy; that is normal.
+  schedule:
+    - cron: "0 11 * * *"
+  # Adds a "Run workflow" button in the Actions tab, so you can test without waiting a day.
+  workflow_dispatch:
+  # Deliberately NOT triggered by push or pull_request: on a public repo, other people can open
+  # pull requests, and a workflow they can trigger must never run with your secrets.
+
+# The built-in GITHUB_TOKEN gets read-only access to the repo and nothing else.
+permissions:
+  contents: read
+
+# Never let two runs overlap (a manual run during the scheduled one would double-fetch).
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45  # a hung run stops here instead of burning minutes
+    steps:
+      # `uses:` runs a reusable action. Pinned to an exact commit (the tag is only a comment)
+      # so a hijacked tag can never change code that runs with your secrets.
+      - name: Check out the repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false  # the job never needs to push, so do not leave a token around
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      # `run:` executes shell commands. --frozen installs exactly what uv.lock says.
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Daily run
+        run: uv run jobagent daily
+        # `env:` hands secrets to this one step as environment variables. GitHub masks their
+        # values in the logs. The app reads them the same way it reads your local .env file.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          MASTER_RESUME_YAML: ${{ secrets.MASTER_RESUME_YAML }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
