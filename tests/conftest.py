@@ -21,8 +21,9 @@ def now() -> datetime:
 
 @pytest.fixture
 def real_criteria() -> Criteria:
-    """The user's actual config/criteria.yaml, for tests of the real filter choices."""
-    return load_criteria(Path(__file__).parents[1] / "config" / "criteria.yaml")
+    """The committed config/criteria.example.yaml: generic and identical on every machine.
+    (The private criteria.local.yaml is deliberately never read by the tests.)"""
+    return load_criteria(Path(__file__).parents[1] / "config" / "criteria.example.yaml")
 
 
 @pytest.fixture

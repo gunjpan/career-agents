@@ -96,8 +96,11 @@ def test_progress_events_report_each_company_and_stage(tmp_path, criteria):
     )  # 6 postings, 0-based
 
 
-def test_real_config_keeps_only_wealthsimple_data_and_engineering_leaders(tmp_path, real_criteria):
-    """End to end with the real criteria.yaml: Ashby fetch -> rules -> Jobs tab.
+def test_a_company_scoped_department_rule_end_to_end(tmp_path, real_criteria):
+    """Ashby fetch -> the shared example rules plus one company-scoped rule -> Jobs tab.
+
+    The department rule is defined here, not read from any config file, so the test needs no
+    private data. It mirrors what a user would put in config/criteria.local.yaml.
 
     Five real Wealthsimple postings (Remote (Canada), Jul-Aug 2026), one per outcome:
       Manager, Software Development - Financial Risk   Data & Engineering  -> kept
@@ -106,12 +109,16 @@ def test_real_config_keeps_only_wealthsimple_data_and_engineering_leaders(tmp_pa
       Senior Software Developer, LLM Infrastructure    Data & Engineering  -> title rule (IC)
       Manager, Tax                                     Finance             -> title rule
     """
+    from jobagent.models.criteria import Rule
+
     now = datetime(2026, 8, 25, tzinfo=UTC)
     ws = Company(name="Wealthsimple", ats="ashby", board_id="wealthsimple", status="active")
     storage = seeded_storage(tmp_path, ws)
     adapters = {"ashby": AshbyAdapter(fixture_client("ashby_wealthsimple_departments"))}
+    only_data_eng = Rule(name="only-data-eng", field="department", match="data (&|and) engineering", action="include", companies=["Wealthsimple"])  # fmt: skip
+    criteria = real_criteria.model_copy(update={"rules": [*real_criteria.rules, only_data_eng]})
 
-    result = run_pipeline(storage, adapters, real_criteria, now).results[0]
+    result = run_pipeline(storage, adapters, criteria, now).results[0]
 
     assert result.fetched == 5
     assert result.added == 1

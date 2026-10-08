@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr | None = None  # also read from the real env var in CI
     gemini_api_key: SecretStr | None = None  # free tier is fine: only public company names go to it
     master_resume_yaml: SecretStr | None = None  # CI: the whole master_resume.yaml, from a secret
+    criteria_yaml: SecretStr | None = None  # CI: your private filter rules, from a secret
     sheet_id: str = ""
     drive_folder_id: str = ""
     storage_backend: Literal["sheets", "csv"] = "sheets"

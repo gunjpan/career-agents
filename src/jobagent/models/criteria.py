@@ -85,6 +85,37 @@ class Criteria(StrictModel):
         return self
 
 
-def load_criteria(path: str | Path = "config/criteria.yaml") -> Criteria:
-    with open(path) as f:
-        return Criteria.model_validate(yaml.safe_load(f))
+LOCAL_CRITERIA = Path("config/criteria.local.yaml")  # git-ignored: your real targets and rules
+EXAMPLE_CRITERIA = Path("config/criteria.example.yaml")  # committed, generic
+
+
+def load_criteria(path: str | Path | None = None, settings=None) -> Criteria:
+    """The hard filters. An explicit path always wins; otherwise, first match wins:
+
+    1. the CRITERIA_YAML secret/env var (the scheduled GitHub Actions run)
+    2. config/criteria.local.yaml (private, git-ignored)
+    3. config/criteria.example.yaml (generic, committed)
+
+    A secret that is set but invalid is an error, never a silent fallback to the example: that
+    would run the scheduled job on rules you did not choose."""
+    if path is not None:
+        return Criteria.model_validate(yaml.safe_load(Path(path).read_text()))
+    secret = (
+        settings.criteria_yaml.get_secret_value().strip()
+        if settings and settings.criteria_yaml
+        else ""
+    )
+    if secret:
+        return Criteria.model_validate(yaml.safe_load(secret))
+    return Criteria.model_validate(
+        yaml.safe_load(
+            (LOCAL_CRITERIA if LOCAL_CRITERIA.exists() else EXAMPLE_CRITERIA).read_text()
+        )
+    )
+
+
+def criteria_source(settings=None) -> str:
+    """Which of the three sources load_criteria() will use (for messages and tests)."""
+    if settings and settings.criteria_yaml and settings.criteria_yaml.get_secret_value().strip():
+        return "CRITERIA_YAML secret"
+    return str(LOCAL_CRITERIA if LOCAL_CRITERIA.exists() else EXAMPLE_CRITERIA)

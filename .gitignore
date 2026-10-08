@@ -20,3 +20,6 @@ config/answers.yaml
 
 # generated documents contain personal data
 output/
+
+# personal filter rules (may name the companies you target); a generic example is committed
+config/criteria.local.yaml

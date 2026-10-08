@@ -97,7 +97,9 @@ def check_setup() -> None:
 
 @app.command("run")
 def run(
-    criteria_file: str = typer.Option("config/criteria.yaml", "--criteria"),
+    criteria_file: Annotated[
+        str | None, typer.Option("--criteria", help="Use this criteria file instead of the default")
+    ] = None,
     force: Annotated[bool, typer.Option("--force", help="Ignore the fetch cooldown")] = False,
     company: Annotated[
         list[str] | None, typer.Option("--company", help="Only this company (repeatable)")
@@ -112,7 +114,7 @@ def run(
 
     settings = get_settings()
     storage = get_storage(settings)
-    criteria = load_criteria(criteria_file)
+    criteria = load_criteria(criteria_file, settings)
     progress = Progress(
         SpinnerColumn(),
         TextColumn("{task.description}"),
@@ -205,7 +207,7 @@ def onboard_cmd(
 
     settings = get_settings()
     with make_client() as client:
-        onboarder = _build_onboarder(settings, client, load_criteria())
+        onboarder = _build_onboarder(settings, client, load_criteria(settings=settings))
         if onboarder is None:
             raise typer.Exit(1)
         if dry_run and names:  # try names that are not in the Sheet at all
@@ -243,7 +245,7 @@ def daily(
 
     settings = get_settings()
     storage = get_storage(settings)
-    criteria = load_criteria()
+    criteria = load_criteria(settings=settings)
     scorer = scoring_config = prompt = None
     if not no_score and settings.anthropic_api_key is not None:
         scorer, scoring_config, prompt = _build_scorer(settings)

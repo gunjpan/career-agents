@@ -1,5 +1,11 @@
-# Hard filters. Plain regex/date checks that run before any LLM call.
-# Real level classification (Sr Manager / Director / VP) is the Scorer's job, not this file's.
+# EXAMPLE hard filters. Plain regex/date checks that run before any LLM call. Real level
+# classification (Sr Manager / Director / VP) is the Scorer's job, not this file's.
+#
+# Which file is used (first match wins):
+#   1. the CRITERIA_YAML secret/env var (the scheduled GitHub Actions run)
+#   2. config/criteria.local.yaml (git-ignored: put your own targets and company rules there)
+#   3. this file
+# Copy it to config/criteria.local.yaml and edit; the local file is never committed.
 
 locations:
   # A posting passes if ANY of its locations matches one of these.
@@ -49,11 +55,13 @@ rules:
     match: '\b(engineering|technology|software|data|platform|AI|security|infrastructure|cloud|devops)\s+manager\b|\bmanager,?\s+(of\s+)?(engineering|technology|software|data|platform|AI|security|infrastructure|cloud|devops)\b'
     action: include
 
-  - name: wealthsimple-only-data-engineering
+  # A company-scoped rule: for "Example Corp" only, keep postings from the Engineering department.
+  # Other companies are unaffected. Put rules about your real targets in criteria.local.yaml.
+  - name: example-only-engineering
     field: department
-    match: 'data (&|and) engineering'
+    match: '^engineering$'
     action: include
-    companies: [Wealthsimple]
+    companies: [Example Corp]
 
   - name: contract-role   # keep, but make fixed-term roles visible in the Jobs tab
     field: title
@@ -64,7 +72,7 @@ rules:
 discovery:
   country: Canada
   # Inclusive on purpose: a family filter hides postings silently, so keep adjacent families
-  # and let the Scorer handle the noise. Not covered: e.g. BMO "Strategy & Change".
+  # and let the Scorer handle the noise. Families outside these patterns are never searched.
   job_family_patterns:
     - technology
     - information technology

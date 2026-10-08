@@ -136,20 +136,20 @@ def test_exclude_beats_include_and_rule_order_does_not_matter(now):
         assert not out.passed and out.bucket == "rule:no-lead"
 
 
-def test_real_config_limits_wealthsimple_to_data_and_engineering(criteria, now):
-    ok = posting(company="Wealthsimple", department="Data & Engineering")
+def test_example_config_limits_example_corp_to_engineering(criteria, now):
+    ok = posting(company="Example Corp", department="Engineering")
     assert check(ok, criteria, now).passed
-    for dept in ("Product", "Commercial & Marketing", "Operations"):
-        out = check(posting(company="Wealthsimple", department=dept), criteria, now)
+    for dept in ("Sales", "Marketing", "Operations"):
+        out = check(posting(company="Example Corp", department=dept), criteria, now)
         assert not out.passed and out.bucket == "include:department", dept
     # Unknown department is never dropped, only flagged.
-    unknown = check(posting(company="Wealthsimple", department=""), criteria, now)
+    unknown = check(posting(company="Example Corp", department=""), criteria, now)
     assert unknown.passed and "department_unknown" in unknown.flags
 
 
-def test_real_config_wealthsimple_include_does_not_touch_other_companies(criteria, now):
-    assert check(posting(company="RBC", department="Product"), criteria, now).passed
-    assert check(posting(company="TD", department="Sales"), criteria, now).passed
+def test_a_company_scoped_include_rule_does_not_touch_other_companies(criteria, now):
+    assert check(posting(company="Other Inc", department="Sales"), criteria, now).passed
+    assert check(posting(company="Another Co", department="Marketing"), criteria, now).passed
 
 
 def test_real_config_flags_fixed_term_roles(criteria, now):
