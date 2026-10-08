@@ -267,6 +267,9 @@ def run_demo(
     wrap.add_row("Kept after hard filters", str(result.fetched - result.filtered_out))
     wrap.add_row("Scored", str(result.scored))
     wrap.add_row("Shortlisted", str(result.shortlisted))
+    wrap.add_row(
+        "Approved by you", f"{1 if result.approved else 0} of {result.shortlisted} shortlisted"
+    )
     if result.tailor_status == "ready":
         verdict = (
             f"[green]Passed[/green]: all {result.claims_checked} claims trace to your master "
@@ -274,7 +277,8 @@ def run_demo(
         )
     else:
         verdict = f"[red]{result.tailor_status}[/red]: not passed"
-    wrap.add_row("Tailored resume checked", verdict)
+    wrap.add_row("Resumes tailored", str(1 if result.approved else 0))
+    wrap.add_row("Verifier result", verdict)
     wrap.add_row("Model calls replayed", str(result.model_calls))
     wrap.add_row("Recorded cost", f"${result.cost_usd:.4f}")
     wrap.add_row("Submitted anywhere", "[bold]nothing[/bold]: a human submits, never the pipeline")
