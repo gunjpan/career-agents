@@ -5,6 +5,16 @@ from pathlib import Path
 import yaml
 
 
+def load_master_resume(settings, path: str | Path = "config/master_resume.yaml") -> dict:
+    """The master resume: from the MASTER_RESUME_YAML secret in CI, else the git-ignored file.
+
+    Same pattern as the Google credentials: the env var wins, so the resume never has to be
+    committed and a laptop run needs no extra setup."""
+    if settings.master_resume_yaml:
+        return yaml.safe_load(settings.master_resume_yaml.get_secret_value())
+    return load_yaml(path)
+
+
 def load_yaml(path: str | Path) -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
