@@ -5,10 +5,30 @@
 # resume_emphasis, cover_letter_tone and salary_floor are used by the Tailor in a later block.
 
 levels:
+  # Levels outside the target range. They are defined so the Scorer can classify a posting that is
+  # below or above it, instead of forcing it into the nearest target level. Not used for shortlisting.
+  individual_contributor:
+    title_variants: ["Engineer", "Senior Engineer", "Staff Engineer", "Principal Engineer", "Architect", "Developer"]
+    scope_signals:
+      team: "No direct reports. May lead projects, mentor people or set technical direction by influence"
+      management: "None: no one-on-ones, performance reviews or hiring decisions about direct reports"
+      budget: "None"
+      reports_to: "A manager, senior manager or director"
+      work: "Hands-on design and code. Seniority words (Senior, Staff, Principal, Lead) do not make a role management"
+
+  manager:
+    title_variants: ["Team Lead", "Engineering Manager", "Squad Lead", "Manager", "Assistant Vice President (a bank grade)", "Associate Vice President (a bank grade)"]
+    scope_signals:
+      team: "One team of roughly 2-8 people who report to the role directly, with no team leads or managers beneath it"
+      management: "First-line management: assigns work, runs one-on-ones and reviews, often hires. Usually still codes or reviews code for a large part of the week"
+      budget: "None beyond team tooling"
+      reports_to: "A senior manager or director"
+      work: "Day-to-day delivery of one team. The difference from an individual contributor is having direct reports. Being hands-on does not lower the level: a role that manages team leads, or more than about 8 people, is senior_manager even if it still reviews code"
+
   senior_manager:
     title_variants: ["Senior Manager", "Sr. Manager", "Associate Director", "Head of <small area>"]
     scope_signals:
-      team: "One team or a few related teams, roughly 8-30 people, mostly engineers and tech leads"
+      team: "One team or a few related teams, roughly 8-30 people, mostly engineers and tech leads (it usually has team leads beneath it)"
       management: "Manages engineers and tech leads; may manage a few first-line managers"
       budget: "Owns delivery and team cost; rarely a formal multi-million budget"
       reports_to: "Director or senior director"
@@ -41,9 +61,18 @@ levels:
     cover_letter_tone: "Strategic and executive; enterprise outcomes and leadership of leaders"
     salary_floor: null
 
+  executive:
+    title_variants: ["Chief Technology Officer", "Chief Information Officer", "Chief Digital Officer", "EVP, Technology", "SVP, Technology (company-wide)"]
+    scope_signals:
+      team: "The whole technology function, often several hundred people, led through vice presidents"
+      management: "Manages vice presidents; owns company-wide technology strategy, organization and succession"
+      budget: "The company-wide technology budget, often tens to hundreds of millions"
+      reports_to: "The CEO or COO; sits on the executive committee and presents to the board"
+      work: "Sets technology direction for the whole company and represents it to the board and investors"
+
 # Titles mislead. Rules of thumb the Scorer applies when a title and the scope disagree.
 title_inflation_notes:
   - "At many banks 'Vice President' is a mid-level title and 'Director' can mean a senior manager or even a senior individual contributor. Judge by team size, reporting line and budget."
-  - "'Assistant/Associate Vice President' and 'AVP' roles are usually below Senior Manager: a senior individual contributor or team lead."
+  - "'Assistant/Associate Vice President' and 'AVP' are bank grades, not seniority. Decide by direct reports: with a small team reporting to the role it is manager; with none it is individual_contributor. It is rarely senior_manager."
   - "Principal, Staff, Lead and Architect titles are individual contributor roles however senior they sound, unless the posting says the role manages people."
   - "If the posting gives no team size, reporting line or budget, say so and lower level confidence instead of guessing from the title."
