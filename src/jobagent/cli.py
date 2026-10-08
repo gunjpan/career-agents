@@ -42,7 +42,7 @@ def _build_onboarder(settings, client, criteria):
     return Onboarder(provider, config, load_prompt(config.prompt), build_adapters(client, criteria.discovery), client, pricing)  # fmt: skip
 
 
-def _build_scorer(settings, config_file: str = "config/scoring.yaml"):
+def _build_scorer(settings, config_file: str = "config/scoring.yaml", resume: dict | None = None):
     """(Scorer, ScoringConfig, Prompt) for the Claude-based Level and Fit Scorer."""
     from jobagent.agents.context import (
         load_master_resume,
@@ -59,7 +59,7 @@ def _build_scorer(settings, config_file: str = "config/scoring.yaml"):
     prompt = load_prompt(config.prompt)
     scorer = Scorer(
         ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value()),
-        config, prompt, render_resume(load_master_resume(settings)),
+        config, prompt, render_resume(resume if resume is not None else load_master_resume(settings)),
         render_profiles(load_yaml("config/role_profiles.yaml")),
     )  # fmt: skip
     return scorer, config, prompt
@@ -262,6 +262,60 @@ def daily(
         with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as f:
             f.write(markdown)
     raise typer.Exit(summary.exit_code)
+
+
+@app.command("eval")
+def eval_cmd(
+    which: Annotated[str, typer.Argument(help="scorer, verifier or all")] = "all",
+    repeats: Annotated[
+        int, typer.Option(help="Scorer runs per case (more = measures run-to-run noise)")
+    ] = 1,
+    no_log: Annotated[
+        bool, typer.Option("--no-log", help="Do not write results to the Evals tab")
+    ] = False,
+) -> None:
+    """Run the labelled evals (uses the Anthropic API, a few cents to ~$0.50 per run)."""
+    from datetime import UTC, datetime
+
+    from jobagent.agents.context import load_yaml, render_resume
+    from jobagent.agents.prompts import load_prompt
+    from jobagent.agents.verifier import Verifier
+    from jobagent.evals.models import load_eval_config, load_scorer_cases, load_verifier_cases
+    from jobagent.evals.report import log_report
+    from jobagent.evals.scorer_eval import run_scorer_eval
+    from jobagent.evals.verifier_eval import run_verifier_eval
+    from jobagent.llm.claude import ClaudeProvider
+    from jobagent.models.scoring import load_scoring_config
+    from jobagent.models.tailoring import load_tailoring_config
+
+    if which not in {"scorer", "verifier", "all"}:
+        console.print("[red]Choose scorer, verifier or all.[/red]")
+        raise typer.Exit(2)
+    settings = get_settings()
+    if settings.anthropic_api_key is None:
+        console.print("[red]ANTHROPIC_API_KEY is not set (put it in .env).[/red]")
+        raise typer.Exit(1)
+    config = load_eval_config()
+    resume = load_yaml(
+        config.master_resume
+    )  # a fictional resume: evals are public and reproducible
+    reports = []
+    if which in {"scorer", "all"}:
+        scorer, _, _ = _build_scorer(settings, resume=resume)
+        reports.append(run_scorer_eval(scorer, load_scorer_cases(config.scorer_cases), config.targets, repeats=repeats, max_cost_usd=config.max_run_cost_usd))  # fmt: skip
+    if which in {"verifier", "all"}:
+        tcfg, scoring = load_tailoring_config(), load_scoring_config()
+        verifier = Verifier(ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value()), tcfg,
+                            load_prompt(tcfg.verifier.prompt), render_resume(resume, include_ids=True),
+                            scoring.pricing_usd_per_mtok[tcfg.verifier.model])  # fmt: skip
+        reports.append(run_verifier_eval(verifier, resume, load_verifier_cases(config.verifier_cases), config.targets, max_cost_usd=config.max_run_cost_usd))  # fmt: skip
+    storage = None if no_log else get_storage(settings)
+    for report in reports:
+        report.render(console)
+        if storage is not None:
+            log_report(storage, report, datetime.now(UTC))
+    if not all(r.passed for r in reports):
+        raise typer.Exit(1)
 
 
 @app.command("score")
