@@ -17,3 +17,6 @@ data/
 # personal data: must never be committed (project must be open-sourceable)
 config/master_resume.yaml
 config/answers.yaml
+
+# generated documents contain personal data
+output/
