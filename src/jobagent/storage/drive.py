@@ -41,11 +41,33 @@ class DriveStorage:
             meta["parents"] = [parent_id]
         return self.service.files().create(body=meta, fields="id").execute()["id"]
 
-    def upload_bytes(self, name: str, data: bytes, mime_type: str) -> str:
-        """Upload a file into the configured folder; returns the Drive file id."""
+    @staticmethod
+    def folder_url(folder_id: str) -> str:
+        return f"https://drive.google.com/drive/folders/{folder_id}"
+
+    def create_job_folder(self, name: str) -> tuple[str, str]:
+        """A subfolder of the app's root folder; returns (folder id, URL)."""
+        folder_id = self.create_folder(name, parent_id=self.folder_id)
+        return folder_id, self.folder_url(folder_id)
+
+    def upload_bytes(
+        self, name: str, data: bytes, mime_type: str, parent_id: str | None = None
+    ) -> str:
+        """Upload a file (into `parent_id`, else the root folder); returns the Drive file id."""
         media = MediaInMemoryUpload(data, mimetype=mime_type)
-        meta = {"name": name, "parents": [self.folder_id]}
+        meta = {"name": name, "parents": [parent_id or self.folder_id]}
         return self.service.files().create(body=meta, media_body=media, fields="id").execute()["id"]
+
+    def create_subfolder(self, name: str, parent_id: str) -> tuple[str, str]:
+        folder_id = self.create_folder(name, parent_id=parent_id)
+        return folder_id, self.folder_url(folder_id)
+
+    def download_bytes(self, file_id: str) -> bytes:
+        return self.service.files().get_media(fileId=file_id).execute()
+
+    def trash(self, file_id: str) -> None:
+        """Move a file or folder to Drive's Trash (recoverable for 30 days), not a permanent delete."""
+        self.service.files().update(fileId=file_id, body={"trashed": True}).execute()
 
     def delete(self, file_id: str) -> None:
         self.service.files().delete(fileId=file_id).execute()

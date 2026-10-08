@@ -13,7 +13,11 @@ ALLOWED: dict[JobState, set[JobState]] = {
     S.APPROVED: {S.TAILORED, S.CLOSED},
     S.TAILORED: {S.VERIFIED, S.TAILORED, S.CLOSED},  # TAILORED -> TAILORED: Verifier send-back
     S.VERIFIED: {S.READY, S.CLOSED},
-    S.READY: {S.SUBMITTED, S.CLOSED},
+    S.READY: {
+        S.SUBMITTED,
+        S.APPROVED,
+        S.CLOSED,
+    },  # APPROVED: a human re-tailors; never from SUBMITTED
     S.SUBMITTED: {S.INTERVIEW, S.REJECTED, S.CLOSED},  # never back to APPROVED
     S.INTERVIEW: {S.REJECTED, S.CLOSED},
     S.REJECTED: set(),
