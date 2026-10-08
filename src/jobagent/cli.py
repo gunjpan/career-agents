@@ -318,6 +318,62 @@ def eval_cmd(
         raise typer.Exit(1)
 
 
+@app.command("demo")
+def demo(
+    fast: Annotated[bool, typer.Option("--fast", help="No pauses between steps")] = False,
+    record: Annotated[
+        bool,
+        typer.Option(
+            "--record", help="Re-record the model answers with real API calls (costs ~$0.20)"
+        ),
+    ] = False,
+    keep: Annotated[
+        bool, typer.Option("--keep", help="Keep the generated files and print their folder")
+    ] = False,
+) -> None:
+    """A free, offline walkthrough of the whole pipeline on fictional data with recorded model answers."""
+    import tempfile
+    import time
+    from pathlib import Path
+
+    from jobagent.demo.replay import RECORDING, RecordingProvider, ReplayMiss, ReplayProvider
+    from jobagent.demo.scenario import run_demo
+
+    pause = (lambda s: None) if fast else time.sleep
+    with tempfile.TemporaryDirectory(prefix="jobagent-demo-") as tmp:
+        workdir = Path(tmp)
+        if record:
+            from jobagent.llm.claude import ClaudeProvider
+
+            settings = get_settings()
+            if settings.anthropic_api_key is None:
+                console.print(
+                    "[red]--record needs ANTHROPIC_API_KEY (it makes real, paid calls).[/red]"
+                )
+                raise typer.Exit(1)
+            provider = RecordingProvider(
+                ClaudeProvider(api_key=settings.anthropic_api_key.get_secret_value())
+            )
+            run_demo(console, provider, workdir, pause=pause, recording_note=" (recording now)")
+            console.print(f"\nRecorded {provider.save()} model responses to {RECORDING}")
+            return
+        try:
+            replay = ReplayProvider()
+            when = replay.meta.get("recorded_at", "")[:10]
+            note = f" on {when} ({', '.join(replay.meta.get('models', []))})" if when else ""
+            run_demo(console, replay, workdir, pause=pause, recording_note=note)
+        except ReplayMiss as e:
+            console.print(f"[red]{e}[/red]")
+            raise typer.Exit(1) from e
+        if keep:
+            keep_dir = Path.cwd() / "output" / "demo"
+            import shutil
+
+            shutil.rmtree(keep_dir, ignore_errors=True)
+            shutil.copytree(workdir, keep_dir)
+            console.print(f"\nFiles kept in {keep_dir}")
+
+
 @app.command("score")
 def score(
     limit: int = typer.Option(None, "--limit", "-n", help="Score at most this many jobs"),

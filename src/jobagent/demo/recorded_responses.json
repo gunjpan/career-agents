@@ -1,0 +1,272 @@
+{
+ "meta": {
+  "models": [
+   "claude-haiku-4-5-20251001",
+   "claude-sonnet-5-5"
+  ],
+  "recorded_at": "2026-10-08T08:10:23+00:00",
+  "responses": 6
+ },
+ "responses": {
+  "16fefcbc97eec5d9d82f9d7e": {
+   "model": "claude-sonnet-5-5",
+   "output": {
+    "core_strengths": [
+     "Engineering Leadership",
+     "Vendor Management",
+     "API Platform Engineering",
+     "Cloud Migration"
+    ],
+    "cover_letter": [],
+    "job_keywords_addressed": [
+     "Engineering leadership",
+     "$9 million budget",
+     "vendor contracts",
+     "payments",
+     "financial services",
+     "availability"
+    ],
+    "roles": [
+     {
+      "bullets": [
+       {
+        "source_id": "nf-d-1",
+        "text": "Led 28 engineers across three client-facing platforms with a $9MM annual budget."
+       },
+       {
+        "source_id": "nf-d-4",
+        "text": "Ran vendor selection, contracting and transition for two third-party payment providers."
+       },
+       {
+        "source_id": "nf-d-2",
+        "text": "Sustained 99.9% availability across the platform portfolio and cut incident response time by 30%."
+       },
+       {
+        "source_id": "nf-d-3",
+        "text": "Led the migration of 14 applications from on-premises hosting to the cloud and documented the approach adopted by 12 other teams."
+       }
+      ],
+      "role_id": "nf-director"
+     }
+    ],
+    "summary": [
+     {
+      "supports": [
+       "summary"
+      ],
+      "text": "Engineering leader with 12 years of experience, including 6 years in leadership roles at a regulated financial institution."
+     },
+     {
+      "supports": [
+       "nf-d-1"
+      ],
+      "text": "Led 28 engineers across three client-facing platforms with a $9MM annual budget."
+     },
+     {
+      "supports": [
+       "nf-d-2",
+       "nf-d-4"
+      ],
+      "text": "Sustained 99.9% availability across the platform portfolio and ran vendor selection, contracting and transition for two third-party payment providers."
+     }
+    ]
+   },
+   "schema": "TailorOutput",
+   "usage": {
+    "cache_read_tokens": 2686,
+    "cache_write_tokens": 0,
+    "input_tokens": 552,
+    "output_tokens": 496
+   }
+  },
+  "25d5dd1b9912286887ad567c": {
+   "model": "claude-haiku-4-5-20251001",
+   "output": {
+    "core_domain_covered": true,
+    "fit_score": 88,
+    "function": "engineering",
+    "gaps": [
+     "Candidate managed 28 engineers; role requires leading 62\u2014larger org design and delegation scope",
+     "No stated experience managing five managers; prior role managed individual contributors and one level of leads"
+    ],
+    "level_confidence": "high",
+    "level_evidence": [
+     "Manages 62 engineers across five teams through five direct-report managers",
+     "Owns $9MM annual budget including vendor contracts",
+     "Reports to VP, Technology; sets multi-year roadmap with executive stakeholders"
+    ],
+    "rationale": "Clear director-level scope: large org, multi-manager structure, significant budget and executive partnership. Candidate exceeds requirements: 12 years engineering experience (vs. 10+), 6 years in leadership including 5+ managing managers, direct payments domain expertise, proven $9MM budget ownership and vendor management at similar scale.",
+    "real_level": "director",
+    "strengths": [
+     "Exact budget and team-size match from prior Director role managing 28 engineers with $9MM budget",
+     "Payments domain expertise: led vendor selection and transition for two payment providers",
+     "Proven executive stakeholder management and regulatory environment experience at financial institution"
+    ],
+    "title_matches_level": true
+   },
+   "schema": "ScorerOutput",
+   "usage": {
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "input_tokens": 2986,
+    "output_tokens": 266
+   }
+  },
+  "8dfe2b05c3efef80363ef473": {
+   "model": "claude-haiku-4-5-20251001",
+   "output": {
+    "core_domain_covered": true,
+    "fit_score": 78,
+    "function": "engineering",
+    "gaps": [
+     "No stated experience with network software or telecom-specific platforms",
+     "Limited evidence of board-level or executive committee exposure",
+     "No mention of setting company-wide technology strategy or CTO partnership"
+    ],
+    "level_confidence": "high",
+    "level_evidence": [
+     "160-person organization led through six directors",
+     "$41 million budget with board exposure",
+     "Reports to CTO; sets technology strategy with executive team"
+    ],
+    "rationale": "The role is clearly VP-level: large org, director reports, substantial budget, and C-suite partnership. The candidate exceeds the 15+ years requirement (12 stated, but profile shows 6 years in leadership at a regulated financial institution with director-level scope, 28-person team, $9MM budget). Strong match on engineering leadership, cloud platforms, and vendor management; some gap in the breadth of 'network software' domain and board-level visibility.",
+    "real_level": "vp",
+    "strengths": [
+     "6 years as Director managing 28 engineers with $9MM budget and multi-platform responsibility",
+     "Proven vendor management and large-scale cloud migration leadership",
+     "Track record of operational excellence (99.9% availability, 30% incident response improvement)"
+    ],
+    "title_matches_level": true
+   },
+   "schema": "ScorerOutput",
+   "usage": {
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "input_tokens": 2967,
+    "output_tokens": 284
+   }
+  },
+  "9426358e1afc54bba7c24818": {
+   "model": "claude-haiku-4-5-20251001",
+   "output": {
+    "core_domain_covered": true,
+    "fit_score": 88,
+    "function": "engineering",
+    "gaps": [
+     "Kotlin experience not mentioned, though Java/Spring Boot expertise is directly applicable",
+     "Moving from Director role to Senior Manager is a step down in scope, though the role's focus on architecture and delivery aligns well"
+    ],
+    "level_confidence": "high",
+    "level_evidence": [
+     "Leads three platform teams with 22 engineers and tech leads",
+     "Manages two engineering leads and several senior engineers directly",
+     "Owns delivery for quarterly roadmap and stays close to architecture reviews",
+     "Reports to Director of Engineering"
+    ],
+    "rationale": "Real level is senior_manager: manages multiple teams with tech leads beneath, owns delivery of a product area, reports to director. Candidate is an excellent fit: 12 years engineering experience, 6 years in leadership including 5 years as Director managing 28 engineers across platforms, deep Java/Spring Boot and AWS cloud migration expertise, and proven track record in payment and checkout-adjacent domains at a regulated financial institution.",
+    "real_level": "senior_manager",
+    "strengths": [
+     "Exceeds experience requirements: 12 years total, 6 years leadership (3+ required)",
+     "Proven platform engineering leadership: managed 28 engineers across three platforms with $9MM budget and 99.9% availability",
+     "Strong technical foundation: built Java/Spring Boot RESTful services at scale; led cloud migration of 14 applications to AWS"
+    ],
+    "title_matches_level": true
+   },
+   "schema": "ScorerOutput",
+   "usage": {
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "input_tokens": 2988,
+    "output_tokens": 317
+   }
+  },
+  "bc84da1d02bb45375376557b": {
+   "model": "claude-haiku-4-5-20251001",
+   "output": {
+    "core_domain_covered": false,
+    "fit_score": 62,
+    "function": "engineering",
+    "gaps": [
+     "No stated experience with iOS or Android development; mobile is the core domain",
+     "Smaller team scope (11 vs. 28) and lower budget responsibility than current role",
+     "No evidence of design partnership or mobile product delivery"
+    ],
+    "level_confidence": "high",
+    "level_evidence": [
+     "Leads 11 engineers and 2 QA analysts with two team leads beneath",
+     "Reports to VP of Engineering",
+     "Budget limited to team tooling, not portfolio-level P&L",
+     "Hands-on: reviews pull requests weekly while managing"
+    ],
+    "rationale": "The role is senior_manager scope (13 people, team leads, VP reporting line) but the title 'Director' overstates it. Candidate has director-level experience leading 28 engineers with $9MM budget and cloud platform delivery, but lacks stated mobile development expertise; the core domain (iOS/Android engineering) is not evidenced in the profile.",
+    "real_level": "senior_manager",
+    "strengths": [
+     "Proven leadership of larger teams (28 engineers) with strong delivery track record",
+     "Experience mentoring and managing team leads in regulated environment",
+     "Hands-on technical engagement (code review, architecture) aligns with role's pull-request expectation"
+    ],
+    "title_matches_level": false
+   },
+   "schema": "ScorerOutput",
+   "usage": {
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "input_tokens": 2975,
+    "output_tokens": 289
+   }
+  },
+  "d95b130b8c3e63c9a2e90851": {
+   "model": "claude-sonnet-5-5",
+   "output": {
+    "checks": [
+     {
+      "claim": "S1: Engineering leader with 12 years of experience, including 6 years in leadership roles at a regulated financial institution.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "S2: Led 28 engineers across three client-facing platforms with a $9MM annual budget.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "S3: Sustained 99.9% availability across the platform portfolio and ran vendor selection, contracting and transition for two third-party payment providers.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "nf-d-1: Led 28 engineers across three client-facing platforms with a $9MM annual budget.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "nf-d-4: Ran vendor selection, contracting and transition for two third-party payment providers.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "nf-d-2: Sustained 99.9% availability across the platform portfolio and cut incident response time by 30%.",
+      "note": "",
+      "verdict": "traced"
+     },
+     {
+      "claim": "nf-d-3: Led the migration of 14 applications from on-premises hosting to the cloud and documented the approach adopted by 12 other teams.",
+      "note": "",
+      "verdict": "traced"
+     }
+    ],
+    "feedback": [],
+    "level_framing_note": "The documents present the candidate as a Director leading 28 engineers, which matches the master and the director-level role. They do not claim managing managers or a larger scope than the master supports.",
+    "level_framing_ok": true,
+    "missing_must_haves": []
+   },
+   "schema": "VerifierOutput",
+   "usage": {
+    "cache_read_tokens": 1943,
+    "cache_write_tokens": 0,
+    "input_tokens": 609,
+    "output_tokens": 505
+   }
+  }
+ }
+}
