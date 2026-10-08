@@ -1,102 +1,99 @@
-# Job Search Agent — project context for Claude Code
+# jobagent: project context for AI coding assistants
 
-Full plan (living doc): https://claude.ai/code/artifact/922d1ea5-c3f2-4458-a421-b2e8ae829af4
-This file is the condensed version. When they disagree, ask me.
+A condensed description of the project's design, constraints and guardrails. The README is the
+user-facing overview; this file is what a coding assistant should know before changing the code.
+Personal preferences live in a git-ignored `CLAUDE.local.md`.
 
-## What we're building
+## What this is
 A multi-agent system that (1) automates job applications up to a human-approved submit and
-(2) strengthens my resume, per job and over time. Targets: Senior Manager, Director and VP
-engineering / AI leadership roles. Portfolio project for an AI leadership job search — design
-choices must be defensible in interviews.
+(2) strengthens a resume, per job and over time, for Senior Manager, Director and VP engineering and
+AI leadership roles. It is also a portfolio project, so design choices must be defensible: prefer
+measured claims to impressions and keep trade-offs explicit.
 
 ## Architecture
-Six LLM agents for judgment work; plain Python for everything else. A deterministic
-orchestrator (not an LLM) moves each job through states:
+LLM agents for judgment work; plain Python for everything else. A deterministic orchestrator (not an
+LLM) moves each job through states:
 
 `new → filtered → scored → shortlisted → approved → tailored → verified → ready → submitted → interview | rejected | closed`
 
-Only the orchestrator changes state. Only I can move a job to `approved` or `submitted`.
+Only the orchestrator changes state, and only a human can move a job to `approved` or `submitted`.
+(`ready → approved` exists for a human re-tailoring; a submitted job never returns to `approved`.)
 
-| Agent | Job | Model tier | Build |
+| Agent | Job | Model tier | Status |
 |---|---|---|---|
-| Company Onboarding | Company name → careers site, ATS type, board ID; validate by fetching one posting | Small + web search | Day 1 |
-| Level + Fit Scorer | Classify real level (Sr Mgr / Director / VP) from scope signals, not title; score fit; return score, rationale, gaps | Small | Day 1 |
-| Tailor | Select and reword master-resume bullets for the posting and level; draft cover letter | Strong | Day 1 |
-| Verifier | Trace every claim to the master resume; flag inflation, wrong level framing, missing must-haves; may send back to Tailor once | Strong | Day 1 |
-| Application | Map form fields to approved answers, draft custom answers, pre-fill with Playwright, pause before Submit | Strong | Week 2 |
-| Career Gap Analyst | Weekly: recurring gaps across scored postings | Strong | Later |
+| Company Onboarding | Company name → careers site, ATS type, board ID; validate by fetching a real posting | Small (Gemini Flash-Lite, free tier, public data only) | built |
+| Level + Fit Scorer | Classify real level from scope signals, not title; judge fit; structured output | Small (Haiku 4.5) | built |
+| Tailor | Select and reword master-resume bullets by id | Strong (Sonnet) | built |
+| Verifier | Trace every claim to the master resume; flag inflation and wrong level framing; may send back to the Tailor once | Strong (Sonnet) | built |
+| Application | Map form fields to approved answers, pre-fill with Playwright, pause before Submit | Strong | planned |
+| Career Gap Analyst | Weekly: recurring gaps across scored postings | Strong | planned |
 
-Small = Haiku 4.5 / Gemini Flash-Lite. Strong = Sonnet / Gemini Flash. Model IDs live in
-config, never hardcoded. LLM access goes through a provider interface (Claude and Gemini
-adapters) so models can be compared by evals.
+Model IDs live in config, never in code. LLM access goes through a provider interface (Claude and
+Gemini adapters) so models can be compared by evals.
 
 ## Extensibility requirements (non-negotiable)
-- **Adding a company = one row** in the Sheet's Companies tab (status `pending`) or
-  `jobagent add-company "Name" --tier A --levels director,vp`. No code change.
-  Onboarding sets `active` or `needs_review` with a reason.
-- **ATS adapters**: one class per ATS behind a common interface. Day 1: Greenhouse, Lever,
-  Ashby (public APIs). Week 2: SmartRecruiters, Workday (unofficial endpoint — fragile),
-  aggregator fallback (Adzuna / JSearch).
-- **Role levels** are config (`role_profiles.yaml`): title variants, scope signals, resume
-  emphasis, cover-letter tone, salary floor per level. Adding a level = config edit only.
-- **No personal data in code** — it must be open-sourceable unchanged.
+- **Adding a company = one row** in the Companies tab (status `pending`) or
+  `jobagent add-company "Name" --tier A --levels director,vp`. No code change. Onboarding sets
+  `active` or `needs_review` with a reason.
+- **ATS adapters**: one class per ATS behind a common interface (Ashby, Greenhouse, Lever and Workday
+  are built; SmartRecruiters and an aggregator fallback are not).
+- **Role levels** are config (`role_profiles.yaml`). Adding a level is a config edit only.
+- **Filters are data** (`criteria.*.yaml` rules). A new filter is a rule, not code.
+- **No personal data in code**: it must be open-sourceable unchanged. Personal content lives in
+  git-ignored files or in GitHub secrets.
 
 ## Config and data
-- `config/master_resume.yaml` — every true bullet, tagged by level and theme (git-ignored)
-- `config/role_profiles.yaml`, `config/criteria.local.yaml`
-- `config/answers.yaml` — application answers I approved (git-ignored)
-- `prompts/<agent>.md` — versioned prompts (version logged with every eval)
-- Google Sheet tabs: Jobs, Companies, Runs, Evals. Behind a storage interface
-  (Sheets now, Postgres later). Fallback for day 1: local CSV if Google auth blocks.
-- Google Drive: one folder per approved job (resume .docx + PDF, cover letter, Verifier report)
+- `config/master_resume.yaml`: every true bullet, with ids (git-ignored; an example is committed)
+- `config/criteria.local.yaml` (git-ignored) over `config/criteria.example.yaml`; the scheduled run reads
+  it from the `CRITERIA_YAML` secret
+- `config/role_profiles.yaml`, `scoring.yaml`, `tailoring.yaml`, `onboarding.yaml`, `fetch.yaml`, `evals.yaml`
+- `config/answers.yaml`: application answers the user approved (git-ignored)
+- `prompts/<agent>.md`: versioned prompts (the version is logged with every score and eval)
+- Google Sheet tabs: Jobs, Companies, Runs, Evals, behind a storage interface (Sheets now, CSV
+  fallback, Postgres later). Google Drive holds one folder per job with candidate subfolders.
 
 ## Stack
-Python 3.12, Pydantic models for every agent's input/output, httpx, gspread, Google Drive API,
-python-docx, Playwright (local only), Typer + rich (CLI and a watchable demo mode),
-pytest with recorded API responses. Scheduled runs on GitHub Actions cron; secrets in repo
-settings.
+Python 3.12, Pydantic models for every agent's input and output, httpx, gspread, Google Drive API,
+python-docx, reportlab, Typer + rich, pytest with recorded responses and fakes, uv, and GitHub Actions
+for the scheduled run and the tests. Playwright is planned for the Application agent (local only).
 
-Repo layout: `agents/`, `adapters/ats/`, `storage/`, `orchestrator/`, `prompts/`, `config/`,
-`evals/`, `tests/`.
+Layout: `src/jobagent/{adapters/ats, agents, demo, documents, evals, llm, models, onboarding,
+orchestrator, storage}`, with `config/`, `prompts/`, `evals/data/`, `tests/` and `.github/workflows/`
+at the top level.
 
-## Constraints discovered (Block 1)
-- **Google auth is split.** Sheets uses the service account. Drive uses OAuth as me, because
+## Constraints discovered
+- **Google auth is split.** Sheets uses the service account. Drive uses OAuth as the user, because
   service accounts have no Drive storage quota (uploads to a personal folder fail with 403
   `storageQuotaExceeded`; Shared Drives need Workspace).
 - **Drive scope is `drive.file`**, so the app only sees files it created. It creates its own root
   folder via `jobagent auth-drive`; `DRIVE_FOLDER_ID` must be that folder, not one made by hand.
-- **OAuth app is published ("In production") on the Google Cloud project**, so the refresh token
-  does not expire after 7 days (Testing status would). It can still die if I revoke access,
-  change my password or leave it unused ~6 months; fix by re-running `jobagent auth-drive`.
-  CI gets the token from the `GOOGLE_OAUTH_TOKEN_JSON` secret.
+- **The OAuth app is published ("In production")**, so the refresh token does not expire after 7
+  days. It can still die if access is revoked or unused for about 6 months; re-run `jobagent auth-drive`.
+- **Free API tiers cannot serve agents that see the resume.** This is enforced in code
+  (`check_provider_policy`), not just by convention.
+- **Changing a prompt, profile or relevant config invalidates the demo recording.** Refresh it with
+  `jobagent demo --record` (a few cents); a test fails until you do, on purpose.
 
-## Day-1 build order (each block has a "done when")
-1. Setup — repo, keys, Sheet + Drive shared with service account → test writes one row
-2. Core pipeline — Companies tab, Greenhouse + Lever adapters, dedupe, hard filters, states → Jobs tab fills
-3. Level + Fit Scorer → every posting has level, score, rationale, gaps
-4. Tailor + Verifier, .docx/PDF to Drive → 3 approved jobs, zero untraceable claims
-5. Company Onboarding + Ashby adapter + `add-company` → a company typed in the Sheet is active next run
-6. GitHub Actions daily run + Runs tab → scheduled run completes without my laptop
-7. Light evals (15 labelled cases: Scorer level accuracy, Verifier fabrication) → pass rates printed
-8. README with architecture diagram, demo recording
-
-## Guardrails (never relax without asking me)
-- Tailor may only select and reword master-resume bullets. Anything the Verifier can't trace blocks the job.
-- Knock-out answers (salary, work authorization, notice period) come only from `answers.yaml`. New questions are drafted for my review, never guessed.
-- No LinkedIn automation. No CAPTCHA bypassing. No auto-submit until the "earned autonomy" gate (20 clean supervised runs, Greenhouse/Lever only).
+## Guardrails (never relax without asking the project owner)
+- The Tailor may only select and reword master-resume bullets. Anything the Verifier cannot trace blocks the job.
+- Knock-out answers (salary, work authorization, notice period) come only from `answers.yaml`. New
+  questions are drafted for human review, never guessed.
+- No LinkedIn automation. No CAPTCHA bypassing. No auto-submit until an "earned autonomy" gate (20 clean
+  supervised runs, Greenhouse/Lever only).
 - Dedupe on company + normalized title + location. A submitted job never returns to `approved`.
 - Hard filters run before any LLM call. Log tokens and cost per run.
-- API keys only in env vars / GitHub secrets. Paid API tiers only (no training on my resume).
-- Free API tiers are allowed for public-data only and for agents accessing public-data.
+- API keys only in env vars and GitHub secrets. Paid API tiers for anything that sees the resume.
+  Free tiers are allowed only for agents that handle public data.
+- Logs of the scheduled run are public: counts and costs only, never company names, job titles or resume text.
+- Workflows that use secrets are never triggered by pull requests; actions are pinned to commit SHAs.
 
-## Evals to support
-Scorer level accuracy (90%+), shortlist precision (70%+), Tailor keyword coverage vs untailored,
-Verifier fabrication rate (0%), Onboarding first-try success (80%+), cost per approved job.
-Later: a trained classifier (e.g. XGBoost) on my Apply/Skip labels once ~150 exist — keep Scorer output structured so features are captured from day one.
+## Evals
+Scorer level accuracy (90%+), Verifier fabrication (0 escapes), Onboarding first-try success (80%+),
+shortlist precision (70%+, not yet measured), Tailor keyword coverage vs untailored (not yet built), and
+cost per approved job. Run `jobagent eval scorer|verifier|all`. Keep the Scorer's output structured so a
+trained classifier on Apply/Skip labels can use it as features later.
 
-## How to work with me
-- I'm a former Director of Software Engineering (13 years; strong in Node.js, REST/OpenAPI, microservices, Spring Boot, CI/CD, cloud). Newer to Python and LLM engineering.
-- Be direct and brief. No flattery. If information is insufficient, say so instead of guessing.
-- For any non-trivial change or decision: explain the approach and trade-off first, then wait for my go-ahead — unless I say "do it".
-- Define LLM/AI and Python terms before using them; tie new concepts to API design, microservices or CI/CD where it helps.
-- When a block or concept lands, quiz me with 2–3 interview-style questions and correct me if I'm wrong.
+## Build status
+Blocks 1 to 8 are built: setup, pipeline, Scorer, Tailor and Verifier, Onboarding, the scheduled run,
+evals, and the README with a demo. Not built: the Application agent, SmartRecruiters, the aggregator
+fallback, the Career Gap Analyst, and any web UI.

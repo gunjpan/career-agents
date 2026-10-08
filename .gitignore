@@ -27,3 +27,6 @@ config/criteria.local.yaml
 
 # your own identifiers/targets, read only by local tests so the public guards do not leak them
 config/private_terms.txt
+
+# personal assistant instructions (preferences and background); a public CLAUDE.md is committed
+CLAUDE.local.md

@@ -8,7 +8,7 @@ import pytest
 from jobagent.cli import app
 
 ROOT = Path(__file__).parents[1]
-DOCS = [ROOT / "README.md", ROOT / "docs" / "setup.md"]
+DOCS = [ROOT / "README.md", ROOT / "docs" / "setup.md", ROOT / "CLAUDE.md"]
 COMMANDS = {
     c.name or c.callback.__name__.replace("_cmd", "").replace("_", "-")
     for c in app.registered_commands
@@ -61,3 +61,22 @@ def test_the_eval_numbers_in_the_readme_match_the_committed_dataset_sizes():
     cases = load_scorer_cases(load_eval_config().scorer_cases)
     assert len(cases) == 13  # the README reports 8/9 then 13/13; update both when the set changes
     assert "13/13" in (ROOT / "README.md").read_text()
+
+
+def test_the_public_claude_md_holds_no_private_links_or_personal_background():
+    text = (ROOT / "CLAUDE.md").read_text()
+    assert (
+        "claude.ai/code/artifact" not in text and "claude.ai/artifact" not in text
+    )  # the private plan link
+    for personal in ("How to work with me", "former Director", "I'm a ", "my resume", "ask me"):
+        assert personal.lower() not in text.lower(), personal
+
+
+def test_personal_assistant_instructions_stay_local_and_untracked():
+    assert "CLAUDE.local.md" in (ROOT / ".gitignore").read_text()
+    import subprocess
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "CLAUDE.local.md"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout
+    assert tracked.strip() == ""
