@@ -9,7 +9,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 dist/
-data/
+# the local CSV fallback output; root only, because evals/data is committed
+/data/
 *.pdf
 *.docx
 *.egg-info/

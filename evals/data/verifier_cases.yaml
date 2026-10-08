@@ -1,0 +1,123 @@
+# Drafts of the Tailor's output for the Verifier evals, built on evals/data/master_resume.example.yaml.
+# Two are faithful (clean) and four contain ONE deliberate fabrication each. The harness checks that
+# every fabrication is stopped before it could ship, by the code checks or the Verifier, and that the
+# clean drafts are not rejected. `expected_layer` says which layer SHOULD catch it; the two cases
+# aimed at the Verifier contain no numbers, so the code checks cannot see them.
+#
+# posting: a short, fictional posting. level: the role's real level as the Scorer would report it.
+
+- id: clean-1-faithful-rewording
+  kind: clean
+  expected_layer: none
+  level: director
+  posting: >-
+    Director of Platform Engineering at Example Corp. Lead engineers across several platforms, own a
+    budget, and drive cloud migration. Regulated industry experience preferred.
+  draft:
+    summary:
+      - {text: Engineering leader with 12 years of experience and 6 years in leadership., supports: [summary]}
+    core_strengths: [Engineering Leadership, Cloud Migration]
+    roles:
+      - role_id: nf-director
+        bullets:
+          - {source_id: nf-d-1, text: "Led 28 engineers across three platforms ($9MM annual budget)."}
+          - {source_id: nf-d-3, text: "Led the migration of 14 applications to the cloud; the approach was adopted by 12 other teams."}
+      - role_id: nf-senior-manager
+        bullets:
+          - {source_id: nf-m-1, text: Managed a team of 15 developers and testers delivering mobile and API products.}
+    cover_letter: []
+    job_keywords_addressed: [cloud migration, platform engineering]
+
+- id: clean-2-shortened-and-reordered
+  kind: clean
+  expected_layer: none
+  level: director
+  posting: >-
+    Director, Technology at Example Corp. Vendor management, availability and incident response are
+    central to this role.
+  draft:
+    summary:
+      - {text: Engineering leader with 12 years of experience., supports: [summary]}
+    core_strengths: [Vendor Management, Engineering Leadership]
+    roles:
+      - role_id: nf-director
+        bullets:
+          - {source_id: nf-d-4, text: Ran vendor selection, contracting and transition for two payment providers.}
+          - {source_id: nf-d-2, text: "Sustained 99.9% availability and cut incident response time by 30%."}
+    cover_letter: []
+    job_keywords_addressed: [vendor management, availability]
+
+- id: corrupt-1-invented-number
+  kind: corrupt
+  corruption: A team size is changed from 28 to 38.
+  expected_layer: code
+  level: director
+  posting: >-
+    Director of Platform Engineering at Example Corp. Lead large engineering teams across platforms.
+  draft:
+    summary:
+      - {text: Engineering leader with 12 years of experience., supports: [summary]}
+    core_strengths: [Engineering Leadership]
+    roles:
+      - role_id: nf-director
+        bullets:
+          - {source_id: nf-d-1, text: "Led 38 engineers across three platforms with a $9MM annual budget."}
+    cover_letter: []
+    job_keywords_addressed: []
+
+- id: corrupt-2-inflated-verb
+  kind: corrupt
+  corruption: '"Contributed to" the redesign becomes "Led" the redesign.'
+  expected_layer: verifier
+  level: director
+  posting: >-
+    Director of Engineering at Example Corp. Security-sensitive platforms; experience with identity
+    and authentication preferred.
+  draft:
+    summary:
+      - {text: Engineering leader with 12 years of experience., supports: [summary]}
+    core_strengths: [Engineering Leadership]
+    roles:
+      - role_id: nf-senior-manager
+        bullets:
+          - {source_id: nf-m-2, text: Led the redesign of the bank's authentication service, working with architecture and security teams.}
+    cover_letter: []
+    job_keywords_addressed: [authentication]
+
+- id: corrupt-3-invented-tool
+  kind: corrupt
+  corruption: Kubernetes and Terraform are added to the cloud migration bullet; neither is in the master.
+  expected_layer: verifier
+  level: director
+  posting: >-
+    Director, Platform Engineering at Example Corp. Hands-on knowledge of Kubernetes and Terraform is
+    a requirement.
+  draft:
+    summary:
+      - {text: Engineering leader with 12 years of experience., supports: [summary]}
+    core_strengths: [Cloud Migration]
+    roles:
+      - role_id: nf-director
+        bullets:
+          - {source_id: nf-d-3, text: "Led the migration of 14 applications to the cloud using Kubernetes and Terraform; the approach was adopted by 12 other teams."}
+    cover_letter: []
+    job_keywords_addressed: [kubernetes, terraform]
+
+- id: corrupt-4-wrong-level-framing
+  kind: corrupt
+  corruption: A first-line delivery role is framed as executive, enterprise-wide leadership.
+  expected_layer: verifier
+  level: director
+  posting: >-
+    Director of Technology at Example Corp. Seeking an executive-level leader of enterprise
+    transformation.
+  draft:
+    summary:
+      - {text: Executive leader of enterprise-wide technology transformation., supports: [summary]}
+    core_strengths: [Engineering Leadership]
+    roles:
+      - role_id: nf-senior-manager
+        bullets:
+          - {source_id: nf-m-1, text: Directed enterprise-wide mobile and API strategy for the whole organization.}
+    cover_letter: []
+    job_keywords_addressed: []

@@ -1,0 +1,116 @@
+# Labelled postings for the Scorer's level classification. Every company and role is fictional,
+# so this file is safe in a public repo. `label_level` is the TRUE level judged from the scope in
+# the text (team size, who reports to whom, budget), per config/role_profiles.yaml, not the title.
+# `title_matches_level: false` marks the traps where the title overstates or understates the scope.
+#
+# Levels: individual_contributor < manager < senior_manager < director < vp < executive
+
+- id: s1-senior-manager-clear
+  company: Northwind Retail
+  title: Senior Manager, Platform Engineering
+  label_level: senior_manager
+  title_matches_level: true
+  description: >-
+    You will lead three platform teams (22 engineers and tech leads) that run Northwind's checkout
+    and inventory services. You manage two engineering leads and several senior engineers directly,
+    own delivery for the quarterly roadmap, and stay close to architecture reviews. You report to the
+    Director of Engineering, Commerce. Team cost is managed within the department budget; there is no
+    separate P&L. Requirements: 8+ years in software engineering, 3+ years managing engineers, strong
+    Java or Kotlin and AWS experience.
+
+- id: s2-director-title-senior-manager-scope
+  company: Cobalt Payments
+  title: Director, Mobile Engineering
+  label_level: senior_manager
+  title_matches_level: false
+  description: >-
+    Cobalt is looking for a Director, Mobile Engineering to lead our iOS and Android group of 11
+    engineers and 2 QA analysts. You will run sprint planning, mentor two team leads, partner with
+    design and product, and still review pull requests every week. You report to the VP of
+    Engineering. Budget responsibility is limited to your team's tooling spend. 6+ years of mobile
+    development and 2+ years leading a team.
+
+- id: s3-avp-title-first-line-manager
+  company: Harbourview Bank
+  title: Associate Vice President, Application Development
+  label_level: manager
+  title_matches_level: false
+  description: >-
+    The AVP, Application Development leads a squad of 6 developers building internal lending tools.
+    This is a hands-on role: about half your time goes to writing and reviewing Java and Spring Boot
+    code. You coordinate with business analysts, run the daily stand-up, and report to the Director
+    of Lending Technology. 5+ years of development experience and 1+ year as a team lead. AVP is a
+    grade within the bank's title structure.
+
+- id: s4-principal-engineer-individual-contributor
+  company: Aurora Cloud
+  title: Principal Software Engineer, Distributed Systems
+  label_level: individual_contributor
+  title_matches_level: false
+  description: >-
+    As a Principal Engineer you will set the technical direction for our storage layer and design the
+    replication protocol for our next-generation database. You will mentor senior engineers across
+    teams, lead design reviews, and write production code every week. This is an individual
+    contributor role with no direct reports; you work closely with the Director of Engineering.
+    12+ years of experience and deep expertise in distributed systems.
+
+- id: d1-director-clear
+  company: Lakeshore Financial
+  title: Director of Engineering, Payments
+  label_level: director
+  title_matches_level: true
+  description: >-
+    Lead Lakeshore's payments engineering organization of 62 engineers across five teams. You manage
+    five engineering managers and are accountable for hiring, performance and organization design.
+    You own an annual budget of $9 million including vendor contracts and set the multi-year
+    technical roadmap with product and risk leaders. You report to the Vice President, Technology.
+    Executive stakeholder communication and regulatory audit partnership are part of the role.
+    10+ years in engineering, including 5+ years managing managers.
+
+- id: d2-senior-manager-title-director-scope
+  company: Meridian Health
+  title: Senior Manager, Technology Delivery
+  label_level: director
+  title_matches_level: false
+  description: >-
+    Meridian is hiring a Senior Manager, Technology Delivery to run our clinical systems delivery
+    group: 4 managers and approximately 70 engineers, analysts and testers across three sites. You
+    own a $12 million annual budget, negotiate vendor contracts, and present quarterly to the
+    executive committee. You report to the Vice President, Clinical Technology. 10+ years in
+    healthcare IT and proven experience managing managers.
+
+- id: v1-vp-title-senior-manager-scope
+  company: Pinecrest Insurance
+  title: Vice President, Application Development
+  label_level: senior_manager
+  title_matches_level: false
+  description: >-
+    The VP, Application Development leads a team of 17 developers and two team leads responsible for
+    our policy administration systems. You report to the Director of Insurance Technology and work
+    with business owners on priorities. The role mixes delivery management with technical oversight;
+    budget is managed at the team level. 8+ years of development and 3+ years as a lead. Vice
+    President is a grade in Pinecrest's corporate title structure.
+
+- id: v2-vp-clear
+  company: Summit Telecom
+  title: Vice President, Engineering
+  label_level: vp
+  title_matches_level: true
+  description: >-
+    Summit Telecom seeks a Vice President of Engineering to lead a 160-person organization across
+    network software, customer platforms and data. Six directors report to you. You own a $41 million
+    budget, set technology strategy with the CTO, whom you report to, and represent engineering to
+    the executive team and the board's technology committee. 15+ years of experience and 6+ years
+    leading large engineering organizations.
+
+- id: v3-head-of-engineering-vp-scope
+  company: Blue Harbor Logistics
+  title: Head of Engineering, North America
+  label_level: vp
+  title_matches_level: false
+  description: >-
+    Blue Harbor needs a Head of Engineering for North America. You will lead roughly 210 engineers
+    through 7 directors, own a $55 million engineering budget, and report to the Chief Technology
+    Officer. You will shape platform strategy, manage the executive relationship with operations and
+    finance, and lead organization-wide hiring and succession planning. 15+ years of experience
+    including leading multiple director-level leaders.

@@ -1,0 +1,16 @@
+# Eval targets (from CLAUDE.md) and data. `jobagent eval scorer|verifier` prints each metric against
+# its target and appends a row per metric to the Evals tab.
+#
+# With only 9 Scorer cases, 0.90 means every case must be right (8/9 = 0.89). That is intended:
+# the set is small and each case is a deliberate trap. Keep it in mind when reading a near miss.
+
+scorer_cases: evals/data/scorer_cases.yaml
+verifier_cases: evals/data/verifier_cases.yaml
+master_resume: evals/data/master_resume.example.yaml  # fictional, so the evals are reproducible
+max_run_cost_usd: 2.00
+
+targets:
+  scorer_level_accuracy: 0.90        # exact match with the true level
+  scorer_within_one_level: 1.00      # never off by more than one level
+  verifier_escape_rate_max: 0.0      # a fabrication that gets through is a failure
+  verifier_false_alarm_max: 0.0      # clean drafts should not be rejected
